@@ -1,0 +1,56 @@
+{
+  "samples": 200,
+  "paired_matrix_fingerprints_match": true,
+  "functional_unit": {
+    "key": [
+      "bafu",
+      "bafu-219622"
+    ],
+    "id": 335447231488667652,
+    "name": "Electricity, low voltage, at grid",
+    "reference_product": "Electricity, low voltage, at grid",
+    "location": "CH",
+    "unit": "kilowatt hour",
+    "amount": 1.0
+  },
+  "method": [
+    "IPCC 2021",
+    "climate change",
+    "global warming potential (GWP100)"
+  ],
+  "method_unit": "kg CO2-Eq",
+  "technosphere_shape": [
+    11747,
+    11747
+  ],
+  "technosphere_nnz": 113945,
+  "direct": {
+    "backend": "scikit-umfpack",
+    "calculation_seconds": 14.45130475005135,
+    "median_iteration_seconds_excluding_first": 0.06651158293243498,
+    "incremental_peak_rss_bytes": 99745792,
+    "peak_rss_bytes": 469467136
+  },
+  "jacobi_gmres": {
+    "calculation_seconds": 18.915168749983422,
+    "median_iteration_seconds_excluding_first": 0.08775575004983693,
+    "incremental_peak_rss_bytes": 91471872,
+    "peak_rss_bytes": 464191488,
+    "use_guess": true,
+    "rtol": 1e-08,
+    "median_gmres_iterations": 38.0,
+    "maximum_gmres_iterations": 43,
+    "maximum_relative_residual": 9.913054859784603e-09,
+    "stochastic_matrix_rebind_fix": true
+  },
+  "score_agreement": {
+    "maximum_absolute_difference": 1.3272666632424546e-08,
+    "median_absolute_difference": 2.7201717128777503e-09,
+    "maximum_relative_difference": 1.1580169171809038e-07,
+    "median_relative_difference": 2.4236694743572497e-08,
+    "direct_mean": 0.1097036871144088,
+    "direct_standard_deviation": 0.014620182261638475,
+    "iterative_mean": 0.10970368723452886,
+    "iterative_standard_deviation": 0.014620181570842642
+  }
+}

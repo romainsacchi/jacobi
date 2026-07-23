@@ -17,6 +17,9 @@ def run_worker(
     solver: str,
     size: int,
     topology: str,
+    degree: int,
+    density: float,
+    diagonal_span: float,
     timeout_seconds: float,
 ) -> dict[str, Any]:
     command = [
@@ -28,6 +31,12 @@ def run_worker(
         str(size),
         "--topology",
         topology,
+        "--degree",
+        str(degree),
+        "--density",
+        str(density),
+        "--diagonal-span",
+        str(diagonal_span),
     ]
     started = time.perf_counter()
     try:
@@ -44,6 +53,9 @@ def run_worker(
             "solver": solver,
             "size": size,
             "topology": topology,
+            "degree": degree if topology == "constant-degree" else None,
+            "target_density": density if topology == "fixed-density" else None,
+            "diagonal_span_orders": diagonal_span,
             "timed_out": True,
             "worker_wall_seconds": time.perf_counter() - started,
         }
@@ -53,6 +65,9 @@ def run_worker(
             "solver": solver,
             "size": size,
             "topology": topology,
+            "degree": degree if topology == "constant-degree" else None,
+            "target_density": density if topology == "fixed-density" else None,
+            "diagonal_span_orders": diagonal_span,
             "timed_out": False,
             "worker_wall_seconds": time.perf_counter() - started,
             "error": error.stderr[-2000:],
@@ -82,6 +97,9 @@ def main() -> None:
         choices=("constant-degree", "fixed-density"),
         default="constant-degree",
     )
+    parser.add_argument("--degree", type=int, default=8)
+    parser.add_argument("--density", type=float, default=0.001)
+    parser.add_argument("--diagonal-span", type=float, default=4.0)
     parser.add_argument("--dense-max", type=int, default=2500)
     parser.add_argument("--run-timeout", type=float, default=20.0)
     parser.add_argument("--total-budget", type=float, default=60.0)
@@ -103,6 +121,9 @@ def main() -> None:
                 solver,
                 size,
                 args.topology,
+                args.degree,
+                args.density,
+                args.diagonal_span,
                 args.run_timeout,
             )
             results.append(result)

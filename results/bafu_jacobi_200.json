@@ -1,0 +1,2063 @@
+{
+  "kind": "bafu",
+  "solver": "jacobi-gmres",
+  "direct_backend": null,
+  "project": "clic-bafu-2025-ef31",
+  "database": "bafu",
+  "activity": {
+    "key": [
+      "bafu",
+      "bafu-219622"
+    ],
+    "id": 335447231488667652,
+    "name": "Electricity, low voltage, at grid",
+    "reference_product": "Electricity, low voltage, at grid",
+    "location": "CH",
+    "unit": "kilowatt hour",
+    "amount": 1.0
+  },
+  "method": [
+    "IPCC 2021",
+    "climate change",
+    "global warming potential (GWP100)"
+  ],
+  "method_unit": "kg CO2-Eq",
+  "stochastic": true,
+  "stochastic_matrix_rebind_fix": true,
+  "seed": 2026,
+  "iterations_requested": 200,
+  "use_guess": true,
+  "rtol": 1e-08,
+  "restart": 50,
+  "maxiter": 300,
+  "technosphere_shape": [
+    11747,
+    11747
+  ],
+  "technosphere_nnz": 113848,
+  "technosphere_density": 0.0008250332814561747,
+  "biosphere_shape": [
+    1807,
+    11747
+  ],
+  "biosphere_nnz": 248974,
+  "object_seconds": 0.04581166699063033,
+  "matrix_load_seconds": 0.15073816594667733,
+  "calculation_seconds": 18.915168749983422,
+  "baseline_rss_bytes": 372719616,
+  "peak_rss_bytes": 464191488,
+  "incremental_peak_rss_bytes": 91471872,
+  "records": [
+    {
+      "iteration": 0,
+      "seconds": 0.08122845902107656,
+      "score": 0.10537430696481523,
+      "relative_residual": 5.766738748760734e-09,
+      "gmres_iterations": 43,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "63239773c65d25adaa63e5e5",
+      "biosphere_fingerprint": "c1a4fd75a2ec4db0669a289f"
+    },
+    {
+      "iteration": 1,
+      "seconds": 0.08436537499073893,
+      "score": 0.10356857979956877,
+      "relative_residual": 7.605566930738867e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d7ba98a465bdda6213fdd43d",
+      "biosphere_fingerprint": "5ff58c435c6019a6ba497634"
+    },
+    {
+      "iteration": 2,
+      "seconds": 0.08114704210311174,
+      "score": 0.08420884212061963,
+      "relative_residual": 8.171956384852925e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "9108dcdc93553ae9535ab018",
+      "biosphere_fingerprint": "db028ef643741bab930b7386"
+    },
+    {
+      "iteration": 3,
+      "seconds": 0.08225966698955745,
+      "score": 0.1186879167958406,
+      "relative_residual": 6.443510443073407e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "a3aaaa6b162140fa6052b50f",
+      "biosphere_fingerprint": "2c6107a7f29d59be7b430ee6"
+    },
+    {
+      "iteration": 4,
+      "seconds": 0.09206566703505814,
+      "score": 0.11204563657388802,
+      "relative_residual": 3.823782450055368e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "9acda376e37f93f5add23093",
+      "biosphere_fingerprint": "3d0b0550d7bbba8828064d21"
+    },
+    {
+      "iteration": 5,
+      "seconds": 0.09358283400069922,
+      "score": 0.13465974087341412,
+      "relative_residual": 7.2932491028744885e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "80ebf97662a7fa8e925245b8",
+      "biosphere_fingerprint": "24e8836623c8a3b3895983c4"
+    },
+    {
+      "iteration": 6,
+      "seconds": 0.08494691702071577,
+      "score": 0.11834440943557685,
+      "relative_residual": 5.097706497066296e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "b4f1e999dc0f09d70986857d",
+      "biosphere_fingerprint": "96fab7e67d19ffc6e7e1019b"
+    },
+    {
+      "iteration": 7,
+      "seconds": 0.09081283304840326,
+      "score": 0.1089654180462067,
+      "relative_residual": 9.218041149550637e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "54f3acb44efef46f9edc4b1e",
+      "biosphere_fingerprint": "e5000acafb841bc97d317950"
+    },
+    {
+      "iteration": 8,
+      "seconds": 0.08556379098445177,
+      "score": 0.1030397209568868,
+      "relative_residual": 7.77139760983052e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "16703af85fbc95634070d2dc",
+      "biosphere_fingerprint": "b5b97157f79927af68b2d839"
+    },
+    {
+      "iteration": 9,
+      "seconds": 0.08434329193551093,
+      "score": 0.09096560605384256,
+      "relative_residual": 5.827176346925257e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "14385b798cae80f980729ac0",
+      "biosphere_fingerprint": "98ed1fe59f5442c8acefd230"
+    },
+    {
+      "iteration": 10,
+      "seconds": 0.08248004200868309,
+      "score": 0.10156625130536276,
+      "relative_residual": 8.356555553750576e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e8ca06c79b9af5b474ea559d",
+      "biosphere_fingerprint": "86f11f80eb4a1cb93a59c051"
+    },
+    {
+      "iteration": 11,
+      "seconds": 0.08383558399509639,
+      "score": 0.09881132123338011,
+      "relative_residual": 9.178973378232e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "b20fe43402764216acf0b1c8",
+      "biosphere_fingerprint": "2afa2b11dd9c86459afa61ff"
+    },
+    {
+      "iteration": 12,
+      "seconds": 0.08679833298083395,
+      "score": 0.10203215054055045,
+      "relative_residual": 4.121898198514409e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "9d3ae20ec21f4bb9b8f16ef5",
+      "biosphere_fingerprint": "27c367b8c8989be4b5a207c3"
+    },
+    {
+      "iteration": 13,
+      "seconds": 0.08631983294617385,
+      "score": 0.1053987024290315,
+      "relative_residual": 4.6989006037102725e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "815724f807adfa4948f0b4b9",
+      "biosphere_fingerprint": "3965d97e2d443ab2190d8b31"
+    },
+    {
+      "iteration": 14,
+      "seconds": 0.0866484169382602,
+      "score": 0.12900566574528982,
+      "relative_residual": 8.41562098174114e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "953df5961e09ee5e97e4e778",
+      "biosphere_fingerprint": "9d00c547293f6b70ed4ffa87"
+    },
+    {
+      "iteration": 15,
+      "seconds": 0.08336620894260705,
+      "score": 0.11053896865362635,
+      "relative_residual": 6.725255471165022e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "29fec98e7458c381d46e6744",
+      "biosphere_fingerprint": "9ab03c72170db7bace9870a5"
+    },
+    {
+      "iteration": 16,
+      "seconds": 0.08601037494372576,
+      "score": 0.13194440697674356,
+      "relative_residual": 8.588540092263473e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "572a27be94a3814664991567",
+      "biosphere_fingerprint": "c18854c0d0bf05f98ba0f301"
+    },
+    {
+      "iteration": 17,
+      "seconds": 0.10691924998536706,
+      "score": 0.09339276890474339,
+      "relative_residual": 6.927174623519736e-09,
+      "gmres_iterations": 43,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "fd7a5dc1b97d23bdf2152f71",
+      "biosphere_fingerprint": "790d5b56cbf2353b1d094ed0"
+    },
+    {
+      "iteration": 18,
+      "seconds": 0.08473308302927762,
+      "score": 0.12307671237819921,
+      "relative_residual": 5.556146582127855e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "7d9bf89f6da8d1b48acd68a3",
+      "biosphere_fingerprint": "0c223dafcc7d036ee3d1b711"
+    },
+    {
+      "iteration": 19,
+      "seconds": 0.07816633302718401,
+      "score": 0.08727761108793022,
+      "relative_residual": 8.685693138764781e-09,
+      "gmres_iterations": 34,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d100960596181b03dfb90c1c",
+      "biosphere_fingerprint": "94fd399e98a3e0a75e2404d8"
+    },
+    {
+      "iteration": 20,
+      "seconds": 0.08566608291584998,
+      "score": 0.11087728856639013,
+      "relative_residual": 9.55266332093434e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "a23c7013e54ca72ff3c4c6dc",
+      "biosphere_fingerprint": "710bf83fe2e28397110dd673"
+    },
+    {
+      "iteration": 21,
+      "seconds": 0.08592520793899894,
+      "score": 0.0975466550680587,
+      "relative_residual": 7.806528750175982e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "798c17fc2f597b637123d039",
+      "biosphere_fingerprint": "fbd2cf25edc40ec0928037d4"
+    },
+    {
+      "iteration": 22,
+      "seconds": 0.09614166698884219,
+      "score": 0.10221858404883873,
+      "relative_residual": 6.14134106177547e-09,
+      "gmres_iterations": 42,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "444e4747882aa1641ac77c3f",
+      "biosphere_fingerprint": "5515545fb6450a1e71ba2c30"
+    },
+    {
+      "iteration": 23,
+      "seconds": 0.09179079195018858,
+      "score": 0.10801892106424046,
+      "relative_residual": 7.9392874355081e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "3babee941b26f6308908885d",
+      "biosphere_fingerprint": "3f380d338b10091d38951b97"
+    },
+    {
+      "iteration": 24,
+      "seconds": 0.08656495902687311,
+      "score": 0.09594207358606482,
+      "relative_residual": 8.641125017225386e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "488faeb7686db3232b5f0021",
+      "biosphere_fingerprint": "db5f326dab693ea8aec7fc23"
+    },
+    {
+      "iteration": 25,
+      "seconds": 0.0853322499897331,
+      "score": 0.09469676624190786,
+      "relative_residual": 8.07504564522671e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "5d9c9ec23ca833df5423ee3d",
+      "biosphere_fingerprint": "ee2d74fceb64a0d30d996a59"
+    },
+    {
+      "iteration": 26,
+      "seconds": 0.08536741707939655,
+      "score": 0.12435330274167812,
+      "relative_residual": 6.138125592908724e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "733e5f9323da635d3c090d6d",
+      "biosphere_fingerprint": "608a415522aebc59abfa814f"
+    },
+    {
+      "iteration": 27,
+      "seconds": 0.08977491699624807,
+      "score": 0.10951752041765456,
+      "relative_residual": 5.527129675804049e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "b0a8629617fe889856a855bb",
+      "biosphere_fingerprint": "96a24d5fb2913c20941ab72b"
+    },
+    {
+      "iteration": 28,
+      "seconds": 0.08459945896174759,
+      "score": 0.12003385557802823,
+      "relative_residual": 7.990415294729658e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "62165955abf98af69e8bdc34",
+      "biosphere_fingerprint": "04e3c8a2e54e821e6f1f9340"
+    },
+    {
+      "iteration": 29,
+      "seconds": 0.10196675010956824,
+      "score": 0.1163994934343175,
+      "relative_residual": 5.948536478645954e-09,
+      "gmres_iterations": 41,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f009f3ec1fa8ea6d9b3f7c77",
+      "biosphere_fingerprint": "36e6e96b5459d64383570d1d"
+    },
+    {
+      "iteration": 30,
+      "seconds": 0.08370729198213667,
+      "score": 0.09069434328015223,
+      "relative_residual": 9.20989978272877e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "0c82fc6cfbe34a9b2ee58b28",
+      "biosphere_fingerprint": "d16e8b988846fced92ee3188"
+    },
+    {
+      "iteration": 31,
+      "seconds": 0.09471654205117375,
+      "score": 0.09819834360651522,
+      "relative_residual": 3.883325897793966e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "8dbdecff2ff3fb99f67cea53",
+      "biosphere_fingerprint": "d7ae983cf30e687584d5adfd"
+    },
+    {
+      "iteration": 32,
+      "seconds": 0.07949091598857194,
+      "score": 0.09482724480693927,
+      "relative_residual": 6.229578557825117e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "de77cc177468d7c024077f4b",
+      "biosphere_fingerprint": "2d8a52bd397ac5615e4b2c4d"
+    },
+    {
+      "iteration": 33,
+      "seconds": 0.0897910000057891,
+      "score": 0.12473427945827929,
+      "relative_residual": 8.747868045311302e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "c6e1124529fa91fa6a7ab40f",
+      "biosphere_fingerprint": "91c6e9e8f016edd5fc733b11"
+    },
+    {
+      "iteration": 34,
+      "seconds": 0.08403224998619407,
+      "score": 0.11401609140780712,
+      "relative_residual": 7.2758628482980695e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "3206bd4caa079600dc6ce9bf",
+      "biosphere_fingerprint": "c3a3d1091dcda7426024f023"
+    },
+    {
+      "iteration": 35,
+      "seconds": 0.08036658307537436,
+      "score": 0.10612024011452971,
+      "relative_residual": 7.847963948043683e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f8c75118beb13ff8d0072da5",
+      "biosphere_fingerprint": "5d98951beac6c65abf0d77ff"
+    },
+    {
+      "iteration": 36,
+      "seconds": 0.08161870809271932,
+      "score": 0.0934364612857523,
+      "relative_residual": 7.512823672090255e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "bdae2c03c6e1299dfc83f61a",
+      "biosphere_fingerprint": "f0cb2898e14480d8669e634f"
+    },
+    {
+      "iteration": 37,
+      "seconds": 0.08781900000758469,
+      "score": 0.10135554450550856,
+      "relative_residual": 8.54928585160814e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "0b0a1e6801cc78b570f9d25a",
+      "biosphere_fingerprint": "2ca311c9e946f24a3b6f11d3"
+    },
+    {
+      "iteration": 38,
+      "seconds": 0.081800208077766,
+      "score": 0.11644344973588042,
+      "relative_residual": 7.600506277989339e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f8104eb3d5ba5520c43fbbb0",
+      "biosphere_fingerprint": "1212cafff88478d8b276e443"
+    },
+    {
+      "iteration": 39,
+      "seconds": 0.09274624998215586,
+      "score": 0.12120507757032793,
+      "relative_residual": 8.00637431933335e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "172c1cfd31537e3cac931b54",
+      "biosphere_fingerprint": "db8bdf82034133fc95a6bef2"
+    },
+    {
+      "iteration": 40,
+      "seconds": 0.07976508291903883,
+      "score": 0.10740922937200784,
+      "relative_residual": 8.888231061508961e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "2b642d9306d34725ff7284f3",
+      "biosphere_fingerprint": "498921f320e6dde8506ac662"
+    },
+    {
+      "iteration": 41,
+      "seconds": 0.08085504197515547,
+      "score": 0.12753931850258296,
+      "relative_residual": 5.923238800074854e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "9a5e9b7cfcd1d29fc11cf6f9",
+      "biosphere_fingerprint": "6f998829c02d746541b98efe"
+    },
+    {
+      "iteration": 42,
+      "seconds": 0.08555037493351847,
+      "score": 0.10252469657510338,
+      "relative_residual": 9.28543412683721e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e550d94d70a8ed83476356cf",
+      "biosphere_fingerprint": "3cfeb11fa608b746fd17268c"
+    },
+    {
+      "iteration": 43,
+      "seconds": 0.08135308302007616,
+      "score": 0.09910847127331117,
+      "relative_residual": 9.709197177642553e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "b3402b4dfc7c3969b35ffd6e",
+      "biosphere_fingerprint": "7d69dac0127ea003bdcec406"
+    },
+    {
+      "iteration": 44,
+      "seconds": 0.07903312495909631,
+      "score": 0.1034205736974702,
+      "relative_residual": 8.39117765479542e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "4d24989b0a4a64e1db9fa1b0",
+      "biosphere_fingerprint": "6c6d18d31c3ff8bb608f6943"
+    },
+    {
+      "iteration": 45,
+      "seconds": 0.08251333306543529,
+      "score": 0.09248100162119294,
+      "relative_residual": 7.338587549245316e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "4227eff0744847fa5861fee5",
+      "biosphere_fingerprint": "03690b7cc74370b0e95bc5c1"
+    },
+    {
+      "iteration": 46,
+      "seconds": 0.09340679098386317,
+      "score": 0.1068759501141479,
+      "relative_residual": 8.896374579853178e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "44635095aedbe22b6a657cb8",
+      "biosphere_fingerprint": "fb2f944a372eb7ab9491c49f"
+    },
+    {
+      "iteration": 47,
+      "seconds": 0.08276054204907268,
+      "score": 0.12500997069615308,
+      "relative_residual": 8.767358249791096e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "cf02c015c1521169579b288e",
+      "biosphere_fingerprint": "6038b38947a23d5fa17b2b1e"
+    },
+    {
+      "iteration": 48,
+      "seconds": 0.08598737500142306,
+      "score": 0.09593850254834022,
+      "relative_residual": 6.620499016890292e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "41e31220293f894fc5bfd77e",
+      "biosphere_fingerprint": "ce85bc65ecd1b585c6cc9f8e"
+    },
+    {
+      "iteration": 49,
+      "seconds": 0.08181095798499882,
+      "score": 0.10506176813887866,
+      "relative_residual": 9.33957467466267e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "46240a25d30e04a013007b3b",
+      "biosphere_fingerprint": "2640e5c1b6b7f9d0c1a203ad"
+    },
+    {
+      "iteration": 50,
+      "seconds": 0.093589958967641,
+      "score": 0.09977359203760383,
+      "relative_residual": 6.970503214968569e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "9edb3c57a22bbd2f5c896752",
+      "biosphere_fingerprint": "aaef30b92b1293f7b716ce73"
+    },
+    {
+      "iteration": 51,
+      "seconds": 0.08754433400463313,
+      "score": 0.12870725823202925,
+      "relative_residual": 7.2240479867205825e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "ec6d56962a63f1f0d5c00afa",
+      "biosphere_fingerprint": "be541f99396f4f70ea99868a"
+    },
+    {
+      "iteration": 52,
+      "seconds": 0.0884350830456242,
+      "score": 0.15208945336636076,
+      "relative_residual": 7.162818381171285e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "dd859a28d0e1e71f937d826a",
+      "biosphere_fingerprint": "56ee0230770d4af0050fbd96"
+    },
+    {
+      "iteration": 53,
+      "seconds": 0.09036766702774912,
+      "score": 0.08266225101054685,
+      "relative_residual": 5.843366096996703e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "dd89b2e28c305d0288aae8ed",
+      "biosphere_fingerprint": "5e714b256f2b16d6c058a3ef"
+    },
+    {
+      "iteration": 54,
+      "seconds": 0.09189145802520216,
+      "score": 0.1110396262414684,
+      "relative_residual": 9.540273059088174e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "3c80869732ac57ff14beaef9",
+      "biosphere_fingerprint": "06383a1a3984066ddfa19a38"
+    },
+    {
+      "iteration": 55,
+      "seconds": 0.0778935409616679,
+      "score": 0.10762962822084755,
+      "relative_residual": 5.545417889057344e-09,
+      "gmres_iterations": 34,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f7632e4f02727b790f58cb67",
+      "biosphere_fingerprint": "71953a09395cb4c9a26cb2ea"
+    },
+    {
+      "iteration": 56,
+      "seconds": 0.08856170799117535,
+      "score": 0.11872425557075407,
+      "relative_residual": 7.044017552465191e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "85e4686e6ca950309f80c928",
+      "biosphere_fingerprint": "b8d07f39d4d845ff866b3136"
+    },
+    {
+      "iteration": 57,
+      "seconds": 0.09119212499354035,
+      "score": 0.13325638218168406,
+      "relative_residual": 9.677399336365323e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "34200432ad795a19ffb5f94e",
+      "biosphere_fingerprint": "273fd0912c159ac446ca5fbf"
+    },
+    {
+      "iteration": 58,
+      "seconds": 0.08729308296460658,
+      "score": 0.10604938512477173,
+      "relative_residual": 3.3899905535222674e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "2398dfde44cacb74310bdca9",
+      "biosphere_fingerprint": "c761236bf0b1d5ab51f1a86e"
+    },
+    {
+      "iteration": 59,
+      "seconds": 0.09214000008068979,
+      "score": 0.09126404735737559,
+      "relative_residual": 6.59955330611462e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "30693608e7c6b75ba67c8437",
+      "biosphere_fingerprint": "bf997c92d46b3a95ac2b9da1"
+    },
+    {
+      "iteration": 60,
+      "seconds": 0.08942445903085172,
+      "score": 0.09328168965780215,
+      "relative_residual": 7.1576016272951e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "940da4ddefb3b6378786a391",
+      "biosphere_fingerprint": "75d94b4774abf9624641c177"
+    },
+    {
+      "iteration": 61,
+      "seconds": 0.10232929093763232,
+      "score": 0.07917298239164205,
+      "relative_residual": 6.109132293274081e-09,
+      "gmres_iterations": 42,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d7df9eeffdc1702c31d6ae50",
+      "biosphere_fingerprint": "0a5380cdfbf0f579a4aab627"
+    },
+    {
+      "iteration": 62,
+      "seconds": 0.09385662502609193,
+      "score": 0.1308709165208739,
+      "relative_residual": 4.6027343467157965e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d1f74674a34878c7b59dd7d9",
+      "biosphere_fingerprint": "2a400cc600a9f1686265f8cc"
+    },
+    {
+      "iteration": 63,
+      "seconds": 0.09490670799277723,
+      "score": 0.1156935528411142,
+      "relative_residual": 5.875184210121475e-09,
+      "gmres_iterations": 41,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f1b1873dd076c6ebd941f12d",
+      "biosphere_fingerprint": "18585a52592f3517c8e71536"
+    },
+    {
+      "iteration": 64,
+      "seconds": 0.09964725002646446,
+      "score": 0.12084347085633193,
+      "relative_residual": 4.299213374444089e-09,
+      "gmres_iterations": 41,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "dd3ac941f58d1868e0f66508",
+      "biosphere_fingerprint": "cee87579c1b6eb1d2e244f2f"
+    },
+    {
+      "iteration": 65,
+      "seconds": 0.09769374993629754,
+      "score": 0.09616024560796567,
+      "relative_residual": 7.868859158788609e-09,
+      "gmres_iterations": 41,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "c89d512bda9d79e717c3a0f5",
+      "biosphere_fingerprint": "ec2c24ee69017c723c1afa2a"
+    },
+    {
+      "iteration": 66,
+      "seconds": 0.09299799997825176,
+      "score": 0.11626644565472395,
+      "relative_residual": 8.996009285178878e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "4d1e399a3e8ae23f0900e874",
+      "biosphere_fingerprint": "b2dc1c1238efc15b0e3e6a8f"
+    },
+    {
+      "iteration": 67,
+      "seconds": 0.0888123749755323,
+      "score": 0.1430991099582487,
+      "relative_residual": 4.734627408851729e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "8468a9cfeac83f638e9cfc72",
+      "biosphere_fingerprint": "21fd55ed94444915086b7d62"
+    },
+    {
+      "iteration": 68,
+      "seconds": 0.09207433299161494,
+      "score": 0.1229334051661436,
+      "relative_residual": 6.1630169339856485e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "113f057b3a9662724db2b7da",
+      "biosphere_fingerprint": "26206b9db501d96e1f1714e4"
+    },
+    {
+      "iteration": 69,
+      "seconds": 0.08220062498003244,
+      "score": 0.12403187676991076,
+      "relative_residual": 9.567988013569818e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f7561f74c40699054efcd80e",
+      "biosphere_fingerprint": "08887a2f6501d828e285edab"
+    },
+    {
+      "iteration": 70,
+      "seconds": 0.09117287502158433,
+      "score": 0.11086921829547483,
+      "relative_residual": 9.106648997040176e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "ce3bdb362a33ea4527cd5bf1",
+      "biosphere_fingerprint": "476893e5d01d6544529049b4"
+    },
+    {
+      "iteration": 71,
+      "seconds": 0.09143324999604374,
+      "score": 0.10149645808495053,
+      "relative_residual": 6.654911213489847e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "ec251d22676a69500a18eb68",
+      "biosphere_fingerprint": "25a940cc121d3247127205e8"
+    },
+    {
+      "iteration": 72,
+      "seconds": 0.08715783304069191,
+      "score": 0.08828797055348932,
+      "relative_residual": 7.112531670960826e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "772c3a81331c6da8f9230b2c",
+      "biosphere_fingerprint": "f3acedd711d2641fd108cb3e"
+    },
+    {
+      "iteration": 73,
+      "seconds": 0.09115329198539257,
+      "score": 0.10766467705995518,
+      "relative_residual": 7.1426224671215495e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "8e76b427ff1eaa7f67baa7a0",
+      "biosphere_fingerprint": "3dc73812000dd154ede77fcb"
+    },
+    {
+      "iteration": 74,
+      "seconds": 0.08204762497916818,
+      "score": 0.11273896848500914,
+      "relative_residual": 8.45469070157731e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "c5244f7c9d730f92f38baba5",
+      "biosphere_fingerprint": "9ebcba8609b5ec0fd8837670"
+    },
+    {
+      "iteration": 75,
+      "seconds": 0.09173887490760535,
+      "score": 0.10308741020789661,
+      "relative_residual": 9.743773570591135e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "653c8718c81d13b0446fdca4",
+      "biosphere_fingerprint": "40f5aece141c4177b943f658"
+    },
+    {
+      "iteration": 76,
+      "seconds": 0.090701499953866,
+      "score": 0.09623045557055712,
+      "relative_residual": 7.493512883351052e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "4aa74e6a56ba1b852e2b83c6",
+      "biosphere_fingerprint": "ff85fdd4891db11220abec43"
+    },
+    {
+      "iteration": 77,
+      "seconds": 0.0929436250589788,
+      "score": 0.11534023326130757,
+      "relative_residual": 6.678711951412278e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "47d1841c2746eb0da57d1a67",
+      "biosphere_fingerprint": "7bada6faebb34b7f5f6924fd"
+    },
+    {
+      "iteration": 78,
+      "seconds": 0.08473295799922198,
+      "score": 0.09343151394883079,
+      "relative_residual": 8.82603157830156e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "7a404c71efafa39889e4f9cf",
+      "biosphere_fingerprint": "0c1e093e72af2cfec207c654"
+    },
+    {
+      "iteration": 79,
+      "seconds": 0.0867358329705894,
+      "score": 0.14659556459014977,
+      "relative_residual": 6.196205455757452e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "73220b609f7536df71df161e",
+      "biosphere_fingerprint": "5dac3f49f6de6668dc705d42"
+    },
+    {
+      "iteration": 80,
+      "seconds": 0.08413162489887327,
+      "score": 0.08880569964599519,
+      "relative_residual": 6.7735539586658775e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "9dd45bd291d68003f1bfb001",
+      "biosphere_fingerprint": "2f13ace993bfe7b499beaddb"
+    },
+    {
+      "iteration": 81,
+      "seconds": 0.0848687089746818,
+      "score": 0.10715352565541825,
+      "relative_residual": 7.822555520394567e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "c6e09251fcbe153baa92f051",
+      "biosphere_fingerprint": "be84549f079656961b92af46"
+    },
+    {
+      "iteration": 82,
+      "seconds": 0.08748879190534353,
+      "score": 0.10837843373569638,
+      "relative_residual": 4.9033259320058685e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d33d0b1faaaadf3a7f7f0fbc",
+      "biosphere_fingerprint": "e00797321a4e38abeded7f14"
+    },
+    {
+      "iteration": 83,
+      "seconds": 0.08461191703099757,
+      "score": 0.08208362267350237,
+      "relative_residual": 9.405431656224635e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d79f96fd923f4ed6130e19b4",
+      "biosphere_fingerprint": "2c520e35d09c895e6c363e90"
+    },
+    {
+      "iteration": 84,
+      "seconds": 0.09113737498410046,
+      "score": 0.11027502403032813,
+      "relative_residual": 6.03984834475255e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "0a3ef99b372b0033baf03661",
+      "biosphere_fingerprint": "f22b3e3655dbc8913dab901c"
+    },
+    {
+      "iteration": 85,
+      "seconds": 0.08904158393852413,
+      "score": 0.10342187486399755,
+      "relative_residual": 9.863074119056083e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f31046d3ff4ce88518d7bc2d",
+      "biosphere_fingerprint": "dbfa7fe569a00a19e4d379d7"
+    },
+    {
+      "iteration": 86,
+      "seconds": 0.08334612497128546,
+      "score": 0.09871051516136534,
+      "relative_residual": 9.708362628081908e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "4bb54810dece04d33de90419",
+      "biosphere_fingerprint": "cfc1d525e81599c5a8c1961c"
+    },
+    {
+      "iteration": 87,
+      "seconds": 0.07730316696688533,
+      "score": 0.1264117697359736,
+      "relative_residual": 5.929960956670968e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d9a7fa86f3b3f01f81baa1fa",
+      "biosphere_fingerprint": "5e6a18d556c93cc95204f7af"
+    },
+    {
+      "iteration": 88,
+      "seconds": 0.0836806669831276,
+      "score": 0.10490009874055461,
+      "relative_residual": 5.284283836766711e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "0e1ac909bb0b891feecad025",
+      "biosphere_fingerprint": "e78eb6fb8f848f413696dcc0"
+    },
+    {
+      "iteration": 89,
+      "seconds": 0.09335191594436765,
+      "score": 0.1152201368561869,
+      "relative_residual": 7.672285437524546e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e808d8a576a4dac76e060ecb",
+      "biosphere_fingerprint": "575d67b3ae9a2e629ba82ba0"
+    },
+    {
+      "iteration": 90,
+      "seconds": 0.083495624945499,
+      "score": 0.1280688473109178,
+      "relative_residual": 8.878101111391499e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d5296fd03079fe1b27bdab8f",
+      "biosphere_fingerprint": "195c500b2bef1b6973648a59"
+    },
+    {
+      "iteration": 91,
+      "seconds": 0.07969045802019536,
+      "score": 0.12230303972727063,
+      "relative_residual": 9.906137541489196e-09,
+      "gmres_iterations": 34,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "b44239ad7e1d6e16bf748932",
+      "biosphere_fingerprint": "15d35c592efc9a50cc619172"
+    },
+    {
+      "iteration": 92,
+      "seconds": 0.09244104195386171,
+      "score": 0.1128249916176847,
+      "relative_residual": 6.317428011356456e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "5b98d3bf73b129553e38b944",
+      "biosphere_fingerprint": "ce4c387a621e0ecd2db6423c"
+    },
+    {
+      "iteration": 93,
+      "seconds": 0.09073491697199643,
+      "score": 0.10278089388868954,
+      "relative_residual": 8.365142721217201e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "925a527444cfdc87af5ae43c",
+      "biosphere_fingerprint": "19faaedd74087323ec5e5c6e"
+    },
+    {
+      "iteration": 94,
+      "seconds": 0.08054262504447252,
+      "score": 0.10847598747105244,
+      "relative_residual": 5.477091060161181e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e034cc8eaf3be77dcb43e35f",
+      "biosphere_fingerprint": "fb0470a4f31e311528fa9521"
+    },
+    {
+      "iteration": 95,
+      "seconds": 0.08452633407432586,
+      "score": 0.1337047448337633,
+      "relative_residual": 8.834249308452447e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "164338bc89426b58579a5f51",
+      "biosphere_fingerprint": "e86fc159f4f8b7b842f39c58"
+    },
+    {
+      "iteration": 96,
+      "seconds": 0.08356274990364909,
+      "score": 0.11860463762060201,
+      "relative_residual": 8.91891821507479e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "7a6405479f797b6358c1af3f",
+      "biosphere_fingerprint": "4a878feb48a201089822c165"
+    },
+    {
+      "iteration": 97,
+      "seconds": 0.09729737509042025,
+      "score": 0.09588923400406307,
+      "relative_residual": 7.964498691020607e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "724cb609acdeb74ff3bd3593",
+      "biosphere_fingerprint": "213a8800fe0aac5e5c150250"
+    },
+    {
+      "iteration": 98,
+      "seconds": 0.09362820803653449,
+      "score": 0.116246153945576,
+      "relative_residual": 9.221825529388298e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "be3ed3a438bc79cac11e700d",
+      "biosphere_fingerprint": "712b9fd432aa6e940c794ce2"
+    },
+    {
+      "iteration": 99,
+      "seconds": 0.09269070799928159,
+      "score": 0.14210956897045307,
+      "relative_residual": 9.250838497148377e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "857e235723f8e1aa57972673",
+      "biosphere_fingerprint": "7403173b6d4886c87540445f"
+    },
+    {
+      "iteration": 100,
+      "seconds": 0.09242854209151119,
+      "score": 0.14345076083176259,
+      "relative_residual": 8.925692994314734e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "8d08310ccd87de286fcf7c40",
+      "biosphere_fingerprint": "cbf629960f3fef1bbd14e3d3"
+    },
+    {
+      "iteration": 101,
+      "seconds": 0.09088962501846254,
+      "score": 0.09208429800302353,
+      "relative_residual": 6.595255862595273e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "1d4faf719bf37718e2333d29",
+      "biosphere_fingerprint": "91a648910863c4b2d82c2ead"
+    },
+    {
+      "iteration": 102,
+      "seconds": 0.09688912506680936,
+      "score": 0.11249180275218061,
+      "relative_residual": 9.712210611686317e-09,
+      "gmres_iterations": 42,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "5ebe30b1c1d8b9057c796772",
+      "biosphere_fingerprint": "df184673e82724f3661afefc"
+    },
+    {
+      "iteration": 103,
+      "seconds": 0.08377333299722522,
+      "score": 0.11197708720498488,
+      "relative_residual": 8.464017232049845e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e6ff772eefbd92505a9a8319",
+      "biosphere_fingerprint": "1a768c72bc45be2e21726ee3"
+    },
+    {
+      "iteration": 104,
+      "seconds": 0.09191283397376537,
+      "score": 0.10875460477033475,
+      "relative_residual": 9.096504599306031e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "ad87ff6e925938f063034666",
+      "biosphere_fingerprint": "023ac4d7be8cb8c06da1542e"
+    },
+    {
+      "iteration": 105,
+      "seconds": 0.08010683406610042,
+      "score": 0.12133565106839786,
+      "relative_residual": 7.556683361963383e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "c07eb44e5b1b2032a8859752",
+      "biosphere_fingerprint": "c6b6f14f3bb3ebc0171af0f3"
+    },
+    {
+      "iteration": 106,
+      "seconds": 0.08710849995259196,
+      "score": 0.1316390762452965,
+      "relative_residual": 8.094803137118902e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "7d4e614f24ea76dc6c2a9b43",
+      "biosphere_fingerprint": "c1dc0a6a2be03b2ac2873771"
+    },
+    {
+      "iteration": 107,
+      "seconds": 0.09009424992837012,
+      "score": 0.11256059503344722,
+      "relative_residual": 5.172694852920829e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f38d243dc50fb602c6dfa49c",
+      "biosphere_fingerprint": "383718c11a8182276bcbc7ef"
+    },
+    {
+      "iteration": 108,
+      "seconds": 0.08075629197992384,
+      "score": 0.09289671907024542,
+      "relative_residual": 6.484480263959841e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e0cab973d9f9232575b40648",
+      "biosphere_fingerprint": "12fbe1e1f9afff8ebb76bd5c"
+    },
+    {
+      "iteration": 109,
+      "seconds": 0.09597337490413338,
+      "score": 0.1153328151802065,
+      "relative_residual": 5.895804422100709e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "0dcc295ead64f8788ab1bbaf",
+      "biosphere_fingerprint": "d7da48c9779a072aea21b9d1"
+    },
+    {
+      "iteration": 110,
+      "seconds": 0.09955729101784527,
+      "score": 0.12345648301537483,
+      "relative_residual": 7.896651371445564e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "93d26d2c9eb44b45012fa3a9",
+      "biosphere_fingerprint": "3a7d049a2091d57b6ccc3179"
+    },
+    {
+      "iteration": 111,
+      "seconds": 0.0896370830014348,
+      "score": 0.11322831038309708,
+      "relative_residual": 5.652014283090171e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "64203d4b6f56b8427436f7c3",
+      "biosphere_fingerprint": "f8565befb56b7586396acab9"
+    },
+    {
+      "iteration": 112,
+      "seconds": 0.08185012498870492,
+      "score": 0.1104901321051355,
+      "relative_residual": 7.30358003770193e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "04ac856218b10a82805c9227",
+      "biosphere_fingerprint": "739de1ba9fc73663174a6efd"
+    },
+    {
+      "iteration": 113,
+      "seconds": 0.09292812505736947,
+      "score": 0.10841339026704352,
+      "relative_residual": 8.320540591827071e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "bb3e5bc40c08df3d86ffde02",
+      "biosphere_fingerprint": "aa6eac16404b116432e7bb80"
+    },
+    {
+      "iteration": 114,
+      "seconds": 0.08300208405125886,
+      "score": 0.09601888066655417,
+      "relative_residual": 5.3758996033923255e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "b96f48d75d359ae13d4b5af0",
+      "biosphere_fingerprint": "25a5f692a8d14623cda66a9d"
+    },
+    {
+      "iteration": 115,
+      "seconds": 0.0857477500103414,
+      "score": 0.11215186583031858,
+      "relative_residual": 8.94818226148068e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "5f4b99949d363f7ac85c8143",
+      "biosphere_fingerprint": "b7d3730001bcf51bbb83ed36"
+    },
+    {
+      "iteration": 116,
+      "seconds": 0.09106862498447299,
+      "score": 0.10163597195302942,
+      "relative_residual": 8.856481161772539e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "106600e924fc8c74c0e554c9",
+      "biosphere_fingerprint": "7c78baf6c3119e962c75a5d1"
+    },
+    {
+      "iteration": 117,
+      "seconds": 0.08887258300092071,
+      "score": 0.12449141071255597,
+      "relative_residual": 7.517844285730107e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "32cfa9dcad3cf0fa68427468",
+      "biosphere_fingerprint": "f56daf457ed63036000a4492"
+    },
+    {
+      "iteration": 118,
+      "seconds": 0.08728954195976257,
+      "score": 0.09014819027842426,
+      "relative_residual": 8.297944435029085e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d5ab872c399bcf612f23c0aa",
+      "biosphere_fingerprint": "220c454aff84b710b5905083"
+    },
+    {
+      "iteration": 119,
+      "seconds": 0.08911579195410013,
+      "score": 0.11342468157332475,
+      "relative_residual": 6.300062245761725e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "229e3f9544b4ea564850ee15",
+      "biosphere_fingerprint": "affb020413bb64d2066d1d3b"
+    },
+    {
+      "iteration": 120,
+      "seconds": 0.09043549990747124,
+      "score": 0.12128690960632296,
+      "relative_residual": 8.522245702918617e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "3437e0352dce0c8b169b54df",
+      "biosphere_fingerprint": "40e3b0b7fff48082d84b9e4d"
+    },
+    {
+      "iteration": 121,
+      "seconds": 0.08430758293252438,
+      "score": 0.11855249047048096,
+      "relative_residual": 8.02115472428587e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "37bd7374c8afb17325de67b9",
+      "biosphere_fingerprint": "a7ccebb620fb9b0c940f5531"
+    },
+    {
+      "iteration": 122,
+      "seconds": 0.08125541696790606,
+      "score": 0.09689507399139703,
+      "relative_residual": 8.652726251900548e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "1906476fafed26ded3dc3a41",
+      "biosphere_fingerprint": "d4f62d176112c519c1f3beeb"
+    },
+    {
+      "iteration": 123,
+      "seconds": 0.08441237499937415,
+      "score": 0.13636055780067668,
+      "relative_residual": 5.861217300195094e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f649336f3872c17ba5a9c939",
+      "biosphere_fingerprint": "f2152dcf5252c205c080b6d2"
+    },
+    {
+      "iteration": 124,
+      "seconds": 0.09000737499445677,
+      "score": 0.08247254841960834,
+      "relative_residual": 5.596256755805796e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "1cb5c3d03b80a17b83237af4",
+      "biosphere_fingerprint": "6e2f60289a46dd035c2f712e"
+    },
+    {
+      "iteration": 125,
+      "seconds": 0.08306658396031708,
+      "score": 0.10565873319369615,
+      "relative_residual": 7.755775993172755e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "c4bb0f3bb419bce0e7ce63b4",
+      "biosphere_fingerprint": "9fc35013542efd3954e29261"
+    },
+    {
+      "iteration": 126,
+      "seconds": 0.08132737490814179,
+      "score": 0.11461549457958703,
+      "relative_residual": 9.721914198380908e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "0493efb65c57f413a1d37414",
+      "biosphere_fingerprint": "f678de34099a0a10a23e8539"
+    },
+    {
+      "iteration": 127,
+      "seconds": 0.0813490420114249,
+      "score": 0.08552174267133152,
+      "relative_residual": 5.259176812284873e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "bf3b3b61d142d5cdfc2f1c1d",
+      "biosphere_fingerprint": "8c16eb67fc2e0d5db6c8e4b9"
+    },
+    {
+      "iteration": 128,
+      "seconds": 0.0820354160387069,
+      "score": 0.10967817273704689,
+      "relative_residual": 8.30201885651707e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f2d7f1b058139b2209e24655",
+      "biosphere_fingerprint": "10da695d1743915fcdf1b3c3"
+    },
+    {
+      "iteration": 129,
+      "seconds": 0.0869952910579741,
+      "score": 0.10336737755699571,
+      "relative_residual": 5.464599158643742e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "b0d8cc9b65fcee9773bd8a4a",
+      "biosphere_fingerprint": "e64f223b07ec2177e825a92e"
+    },
+    {
+      "iteration": 130,
+      "seconds": 0.08857133309356868,
+      "score": 0.13025255375239778,
+      "relative_residual": 4.956689688870313e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "58e510f7fb8863e864990d06",
+      "biosphere_fingerprint": "26256dc5928d41ede50459ba"
+    },
+    {
+      "iteration": 131,
+      "seconds": 0.07772083301097155,
+      "score": 0.09129760395426335,
+      "relative_residual": 8.78268433240935e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "336c0dab063bc0ed6439f80f",
+      "biosphere_fingerprint": "f9503e5c959717b60bd21f7f"
+    },
+    {
+      "iteration": 132,
+      "seconds": 0.0901503749191761,
+      "score": 0.10110276842395849,
+      "relative_residual": 5.575978146410179e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "67425d88484be3d5d3bef232",
+      "biosphere_fingerprint": "11ecc8a1d9e048ec24d72de4"
+    },
+    {
+      "iteration": 133,
+      "seconds": 0.08884441701229662,
+      "score": 0.09059470596955456,
+      "relative_residual": 7.548125315305628e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f5d3420ad987c8fd1ac51543",
+      "biosphere_fingerprint": "316c63e21c7488b89730c0e0"
+    },
+    {
+      "iteration": 134,
+      "seconds": 0.0883423329796642,
+      "score": 0.1271458805394609,
+      "relative_residual": 4.850547715570531e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "1b93904758b1f755f1203d47",
+      "biosphere_fingerprint": "05cb616e88d6bf8177de651b"
+    },
+    {
+      "iteration": 135,
+      "seconds": 0.1025696248980239,
+      "score": 0.1102808800235897,
+      "relative_residual": 8.015326090983596e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "266f70bf319161b98ea2cdce",
+      "biosphere_fingerprint": "925ebb11660fb85eb426985c"
+    },
+    {
+      "iteration": 136,
+      "seconds": 0.1478859579656273,
+      "score": 0.08378003856306405,
+      "relative_residual": 7.851104842768605e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "85246caaa3aa9e5b6b43a1d1",
+      "biosphere_fingerprint": "f3b80e11759775fba634c78f"
+    },
+    {
+      "iteration": 137,
+      "seconds": 0.11180841596797109,
+      "score": 0.15549290886754455,
+      "relative_residual": 5.375965248727349e-09,
+      "gmres_iterations": 41,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "3d41b91e6e22fb9b8816fe1d",
+      "biosphere_fingerprint": "76a9e4c372af9cefa38b7c1b"
+    },
+    {
+      "iteration": 138,
+      "seconds": 0.0949601250467822,
+      "score": 0.1087916054793335,
+      "relative_residual": 9.300357133403472e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "29e0f3d610f5722ca384e9fe",
+      "biosphere_fingerprint": "1b134d2332deb8377e318d78"
+    },
+    {
+      "iteration": 139,
+      "seconds": 0.1040092910407111,
+      "score": 0.10256587337534125,
+      "relative_residual": 9.706189461826985e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "7264111a79934c86afd5efa6",
+      "biosphere_fingerprint": "93fbe9f1a771ef85811a31e4"
+    },
+    {
+      "iteration": 140,
+      "seconds": 0.10244758403860033,
+      "score": 0.10919375849296946,
+      "relative_residual": 7.770106933514265e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "479c6622e27ba7a88de96290",
+      "biosphere_fingerprint": "4341301ee8be85c772297cc9"
+    },
+    {
+      "iteration": 141,
+      "seconds": 0.09782679192721844,
+      "score": 0.11591562480372986,
+      "relative_residual": 4.747351430961129e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "fa55679982b0a2847fb47666",
+      "biosphere_fingerprint": "c406f6f49fcc99762f02c7db"
+    },
+    {
+      "iteration": 142,
+      "seconds": 0.0942753340350464,
+      "score": 0.10178042859689372,
+      "relative_residual": 7.301644687832935e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "b711e1e89cc5f10d0cb331a2",
+      "biosphere_fingerprint": "ad0e5b67d3c28132e36a9268"
+    },
+    {
+      "iteration": 143,
+      "seconds": 0.09956674999557436,
+      "score": 0.13665181788652692,
+      "relative_residual": 9.747960993430798e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d9c8d1d5256b68949a89d773",
+      "biosphere_fingerprint": "1b5eaa3bb1ec1931f046d2c2"
+    },
+    {
+      "iteration": 144,
+      "seconds": 0.09861412504687905,
+      "score": 0.11224254566588253,
+      "relative_residual": 7.051442863816341e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "1e36c35cc82f974a29e68923",
+      "biosphere_fingerprint": "146064fdc10220913e2ae06b"
+    },
+    {
+      "iteration": 145,
+      "seconds": 0.0904688750160858,
+      "score": 0.11031351658161914,
+      "relative_residual": 7.124523109117942e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "c6f23744e02a81ffb6f8dd9e",
+      "biosphere_fingerprint": "d23294b62137c74487d0680d"
+    },
+    {
+      "iteration": 146,
+      "seconds": 0.09491683298256248,
+      "score": 0.12382836627315512,
+      "relative_residual": 7.553079872131434e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "32b9f160c0752e1adf924ccb",
+      "biosphere_fingerprint": "bcff3cb4b419672e3e0c6a85"
+    },
+    {
+      "iteration": 147,
+      "seconds": 0.08765162492636591,
+      "score": 0.11097288827705493,
+      "relative_residual": 9.005619075648899e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e9c947116171c43bdb49a827",
+      "biosphere_fingerprint": "4eb5fc8568ac2692c8b40d0d"
+    },
+    {
+      "iteration": 148,
+      "seconds": 0.10026004107203335,
+      "score": 0.10661486343993472,
+      "relative_residual": 3.0004840897738048e-09,
+      "gmres_iterations": 42,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "c3b5017f7dd3a027245256c2",
+      "biosphere_fingerprint": "5270f2cf16015acb9e12ca0d"
+    },
+    {
+      "iteration": 149,
+      "seconds": 0.07854154193773866,
+      "score": 0.08760028206538517,
+      "relative_residual": 9.228058621906193e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "2f52015b579b3c6b11e3162c",
+      "biosphere_fingerprint": "77b6aee559dc65387544c8e9"
+    },
+    {
+      "iteration": 150,
+      "seconds": 0.0960127089638263,
+      "score": 0.10648825444096346,
+      "relative_residual": 9.459819444860376e-09,
+      "gmres_iterations": 41,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "f21c4a5cadfc42a02eee9f5d",
+      "biosphere_fingerprint": "10f57a215bae77ef4bcb4c47"
+    },
+    {
+      "iteration": 151,
+      "seconds": 0.09130812506191432,
+      "score": 0.10760223679018073,
+      "relative_residual": 8.645337658434393e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e3eab24a19e116bebb0a51cf",
+      "biosphere_fingerprint": "b8cf47fce0e8667b4f7e0b9a"
+    },
+    {
+      "iteration": 152,
+      "seconds": 0.08864933403674513,
+      "score": 0.09725284701591173,
+      "relative_residual": 9.594972306827319e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "7243eb550bf5484f76035af6",
+      "biosphere_fingerprint": "4db5687dc0a5a2cd26369091"
+    },
+    {
+      "iteration": 153,
+      "seconds": 0.08850145793985575,
+      "score": 0.10632987677873627,
+      "relative_residual": 8.752740219357867e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "b71f82d68f7364fd0bbb0d5a",
+      "biosphere_fingerprint": "2dea4ec2c12772103f545d8e"
+    },
+    {
+      "iteration": 154,
+      "seconds": 0.08357995795086026,
+      "score": 0.11744458284076881,
+      "relative_residual": 4.792679830617382e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "31091eb4d99abc4c829ff752",
+      "biosphere_fingerprint": "121aed1effadc64522658646"
+    },
+    {
+      "iteration": 155,
+      "seconds": 0.08965270803309977,
+      "score": 0.09306851165771701,
+      "relative_residual": 9.913054859784603e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "1d85cdb4ae5c59973ede02f4",
+      "biosphere_fingerprint": "4f035a1830c9190b78f7559b"
+    },
+    {
+      "iteration": 156,
+      "seconds": 0.08039141702465713,
+      "score": 0.0845687012542596,
+      "relative_residual": 7.180885103964137e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "a5002fade15cf1b743224e56",
+      "biosphere_fingerprint": "f9adc3bee6e858e8d961372a"
+    },
+    {
+      "iteration": 157,
+      "seconds": 0.08795616705901921,
+      "score": 0.11885021474624044,
+      "relative_residual": 8.352404571974116e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "3272faa3f2fbad4496f1b953",
+      "biosphere_fingerprint": "1a20f9566672489d07d11c4a"
+    },
+    {
+      "iteration": 158,
+      "seconds": 0.08493679203093052,
+      "score": 0.15065790393894968,
+      "relative_residual": 5.988968230758121e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "52ed5f70faab755deb18853e",
+      "biosphere_fingerprint": "fabf5487a225843d7ac88450"
+    },
+    {
+      "iteration": 159,
+      "seconds": 0.08577512507326901,
+      "score": 0.12634683452971301,
+      "relative_residual": 5.715606886897594e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "bf6724bb3280c4818a8376a1",
+      "biosphere_fingerprint": "5433a80f08da430be066a746"
+    },
+    {
+      "iteration": 160,
+      "seconds": 0.0923946660477668,
+      "score": 0.10500869271679471,
+      "relative_residual": 6.50413583629215e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "bdf69eb82e2e38d2a344613c",
+      "biosphere_fingerprint": "df21e14fb8e7909643484609"
+    },
+    {
+      "iteration": 161,
+      "seconds": 0.08563149999827147,
+      "score": 0.12043247742252754,
+      "relative_residual": 5.368764930438626e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "af7137ee43ec205fdc3d13b8",
+      "biosphere_fingerprint": "59d2acb7590159c597ca18b9"
+    },
+    {
+      "iteration": 162,
+      "seconds": 0.08275083301123232,
+      "score": 0.10515317572338789,
+      "relative_residual": 6.240015125479265e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e7400644fd978d47f83a2c0e",
+      "biosphere_fingerprint": "66db997a5a9c102832854264"
+    },
+    {
+      "iteration": 163,
+      "seconds": 0.09353354200720787,
+      "score": 0.09927117654355543,
+      "relative_residual": 6.2186143561092e-09,
+      "gmres_iterations": 41,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d8f09619f639a5825ff26fe4",
+      "biosphere_fingerprint": "f6b6e586addb5fe29ba00233"
+    },
+    {
+      "iteration": 164,
+      "seconds": 0.08263641595840454,
+      "score": 0.1334337837613529,
+      "relative_residual": 7.603800454606431e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e46e2709514d4440c7ac2a5a",
+      "biosphere_fingerprint": "159e87eb1fde95113286e7ef"
+    },
+    {
+      "iteration": 165,
+      "seconds": 0.09809662506449968,
+      "score": 0.114919783090591,
+      "relative_residual": 6.592963126479032e-09,
+      "gmres_iterations": 42,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "248f08ee93e770f0fc4614d4",
+      "biosphere_fingerprint": "ab9e61b23d738e43b8f8538e"
+    },
+    {
+      "iteration": 166,
+      "seconds": 0.08624274993781,
+      "score": 0.11671539840743225,
+      "relative_residual": 5.915547181555845e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "b77c81039c666f42d58812f0",
+      "biosphere_fingerprint": "dbc0a52f2151064df12f2542"
+    },
+    {
+      "iteration": 167,
+      "seconds": 0.08064966695383191,
+      "score": 0.10845305147972387,
+      "relative_residual": 7.70577989140983e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "d79258a85ecaadc627f462cd",
+      "biosphere_fingerprint": "0773d94021f93a30aa68ef45"
+    },
+    {
+      "iteration": 168,
+      "seconds": 0.08547754201572388,
+      "score": 0.09317640963260582,
+      "relative_residual": 4.8685268284755836e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "a31b1b473f2ef378884a2392",
+      "biosphere_fingerprint": "3048d775f6e41018975b96dc"
+    },
+    {
+      "iteration": 169,
+      "seconds": 0.0924972080392763,
+      "score": 0.13399162739470072,
+      "relative_residual": 6.393801028230595e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "482a8e89f65175a742bebdac",
+      "biosphere_fingerprint": "1d318959ea0f76642b482e53"
+    },
+    {
+      "iteration": 170,
+      "seconds": 0.09599904203787446,
+      "score": 0.11283590943298266,
+      "relative_residual": 7.227545021536271e-09,
+      "gmres_iterations": 42,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "8f9a7b74146e9d6c48c41c16",
+      "biosphere_fingerprint": "1cd6fb8850e6fd4dc4d9f8e6"
+    },
+    {
+      "iteration": 171,
+      "seconds": 0.09697591594886035,
+      "score": 0.12817421275340726,
+      "relative_residual": 6.203734460597543e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "adfe23f4b81de5f3625e7c6c",
+      "biosphere_fingerprint": "27cefde1d5d54904d73df05a"
+    },
+    {
+      "iteration": 172,
+      "seconds": 0.08745824999641627,
+      "score": 0.10405088650360801,
+      "relative_residual": 5.7102321357323445e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e5ca8eea1cbbf9fb32939d7f",
+      "biosphere_fingerprint": "ea8b89397a913c9d6ec3db99"
+    },
+    {
+      "iteration": 173,
+      "seconds": 0.0799302919767797,
+      "score": 0.10674308654009029,
+      "relative_residual": 6.187750891703896e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "78e3b017d27f6588fdb171f4",
+      "biosphere_fingerprint": "058e983a97d4e030a0816be7"
+    },
+    {
+      "iteration": 174,
+      "seconds": 0.0919126250082627,
+      "score": 0.11235823659184278,
+      "relative_residual": 9.371268338823288e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e46af8d219ccb93ee5740e17",
+      "biosphere_fingerprint": "d4283cb940f50d517b1b8171"
+    },
+    {
+      "iteration": 175,
+      "seconds": 0.09378829109482467,
+      "score": 0.10066122836859198,
+      "relative_residual": 9.160467373818269e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "a20b06f28dbb6eb693551d16",
+      "biosphere_fingerprint": "b3266c8e5f520cbc315ae942"
+    },
+    {
+      "iteration": 176,
+      "seconds": 0.0873985830694437,
+      "score": 0.1011746031963177,
+      "relative_residual": 8.595921072620796e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "4b83c5a7f3520de5f605afaa",
+      "biosphere_fingerprint": "2a0b8380dff4ebe3b9eab8e6"
+    },
+    {
+      "iteration": 177,
+      "seconds": 0.08733041607774794,
+      "score": 0.09396123256602112,
+      "relative_residual": 6.17983604569492e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "8f9d660cbe9d6e0837f76574",
+      "biosphere_fingerprint": "9114dc8d6169edd5474635ab"
+    },
+    {
+      "iteration": 178,
+      "seconds": 0.08245616604108363,
+      "score": 0.08770810854273471,
+      "relative_residual": 5.511611486636898e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "b2a991932516924b2b10ed3a",
+      "biosphere_fingerprint": "331c2e4bf3365705747e106c"
+    },
+    {
+      "iteration": 179,
+      "seconds": 0.07916125003248453,
+      "score": 0.11908024248302378,
+      "relative_residual": 9.585041475436423e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "109dd393055bbdcffd3baebb",
+      "biosphere_fingerprint": "f7a935e866892ad71ebabbd1"
+    },
+    {
+      "iteration": 180,
+      "seconds": 0.08927620900794864,
+      "score": 0.10412219392155919,
+      "relative_residual": 8.445895764107394e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "0d51816dc854dd2061036606",
+      "biosphere_fingerprint": "6b6fdea0508f18dd17c4a0d2"
+    },
+    {
+      "iteration": 181,
+      "seconds": 0.09100766701158136,
+      "score": 0.11929567933211259,
+      "relative_residual": 7.749998051606593e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "09ff0b4fda1deecc1f437716",
+      "biosphere_fingerprint": "9d8625b24d7b59bb5a8c19ad"
+    },
+    {
+      "iteration": 182,
+      "seconds": 0.09355004190001637,
+      "score": 0.11379493143289098,
+      "relative_residual": 5.852098764496989e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "c04419cec0dd620d811cbdd7",
+      "biosphere_fingerprint": "327262a2c557cdfa2e143790"
+    },
+    {
+      "iteration": 183,
+      "seconds": 0.08367149997502565,
+      "score": 0.1057900965037339,
+      "relative_residual": 7.718458964663646e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "916fc171e20ca64d0f2d44a2",
+      "biosphere_fingerprint": "4cfd6672416d8b9d8a4017a8"
+    },
+    {
+      "iteration": 184,
+      "seconds": 0.084704166976735,
+      "score": 0.11014113189152563,
+      "relative_residual": 5.427046336488688e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "ed10e79a4a6f4d289ab17ff3",
+      "biosphere_fingerprint": "2c5cfa0196ed2a180d2b0ffe"
+    },
+    {
+      "iteration": 185,
+      "seconds": 0.09249383304268122,
+      "score": 0.11453592344262986,
+      "relative_residual": 5.437487082461475e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e375df7c03d93371b2cc941f",
+      "biosphere_fingerprint": "00109abf93a8f00123cd40ac"
+    },
+    {
+      "iteration": 186,
+      "seconds": 0.09233429201412946,
+      "score": 0.09599934364320441,
+      "relative_residual": 8.097537701448578e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "176d79f27b5eb6e6947b44fe",
+      "biosphere_fingerprint": "c40cb5bd98a6361cf6ca56aa"
+    },
+    {
+      "iteration": 187,
+      "seconds": 0.08767979103140533,
+      "score": 0.09832037741722693,
+      "relative_residual": 6.111260777926628e-09,
+      "gmres_iterations": 38,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "04d9d8247238f964a7d857d0",
+      "biosphere_fingerprint": "260701dbc58b7f82f264936b"
+    },
+    {
+      "iteration": 188,
+      "seconds": 0.08563350001350045,
+      "score": 0.11963355991359124,
+      "relative_residual": 8.68706388071284e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "bfd925d177336f2935786a9d",
+      "biosphere_fingerprint": "e2562a8bcd3293e6405357e3"
+    },
+    {
+      "iteration": 189,
+      "seconds": 0.09034529200289398,
+      "score": 0.11937952502085261,
+      "relative_residual": 6.247528101102649e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "7e0b40918631de6dd516df16",
+      "biosphere_fingerprint": "ea9ffdaf9d9cd5c3bb7ec8c9"
+    },
+    {
+      "iteration": 190,
+      "seconds": 0.08407362503930926,
+      "score": 0.11762777291212397,
+      "relative_residual": 6.03708492816279e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "479567dd1ccdeeb2d2cea5d6",
+      "biosphere_fingerprint": "a5ad979f7bc6353b14870984"
+    },
+    {
+      "iteration": 191,
+      "seconds": 0.08360524999443442,
+      "score": 0.12037270562365321,
+      "relative_residual": 9.613014862036393e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "c13b4d291ba26ee773be216f",
+      "biosphere_fingerprint": "bfdf259e36cc06e37b927d97"
+    },
+    {
+      "iteration": 192,
+      "seconds": 0.08663154195528477,
+      "score": 0.10796590877719656,
+      "relative_residual": 7.098391481721776e-09,
+      "gmres_iterations": 36,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "870a8711af15f45e3e4e27ec",
+      "biosphere_fingerprint": "030b9db43eb8aa485c9c11fd"
+    },
+    {
+      "iteration": 193,
+      "seconds": 0.10033062496222556,
+      "score": 0.1157810000222033,
+      "relative_residual": 8.698725375002947e-09,
+      "gmres_iterations": 41,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "1f66e767365584e0211f8b41",
+      "biosphere_fingerprint": "22c77960956b2163897baea0"
+    },
+    {
+      "iteration": 194,
+      "seconds": 0.08838020800612867,
+      "score": 0.11973955013324016,
+      "relative_residual": 6.771903350213185e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "5a2b7c089e7e27091dccd4dc",
+      "biosphere_fingerprint": "3cf080425c58e1b84085b4b6"
+    },
+    {
+      "iteration": 195,
+      "seconds": 0.09058479196392,
+      "score": 0.0916365800956078,
+      "relative_residual": 7.853258928375439e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "3b744bbaf2c85020a17879f0",
+      "biosphere_fingerprint": "bbfb90a29ae88c191ae8acb6"
+    },
+    {
+      "iteration": 196,
+      "seconds": 0.079027249943465,
+      "score": 0.0949564529255466,
+      "relative_residual": 8.707465461267585e-09,
+      "gmres_iterations": 35,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "1e777318be5391107f2a74a0",
+      "biosphere_fingerprint": "19411593e0ae98155cae3c89"
+    },
+    {
+      "iteration": 197,
+      "seconds": 0.08775575004983693,
+      "score": 0.08267099075398986,
+      "relative_residual": 6.214685958791242e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "96e280ce1a650ee42483a4aa",
+      "biosphere_fingerprint": "8bc294af1637a122b182bb8d"
+    },
+    {
+      "iteration": 198,
+      "seconds": 0.09251266706269234,
+      "score": 0.09547552965050704,
+      "relative_residual": 8.564413649273623e-09,
+      "gmres_iterations": 39,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e05e305676caf4c0eaaee426",
+      "biosphere_fingerprint": "5064ad81ccaa1ce4972a4a87"
+    },
+    {
+      "iteration": 199,
+      "seconds": 0.09005704196169972,
+      "score": 0.11620356609561497,
+      "relative_residual": 8.151561489274556e-09,
+      "gmres_iterations": 37,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "e638567935692d7deab89157",
+      "biosphere_fingerprint": "34fdbbc2164d1b9112331a04"
+    }
+  ],
+  "environment": {
+    "python": "3.11.15",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "processor": "arm",
+    "physical_memory_bytes": 17179869184,
+    "bw2calc": "2.5.0",
+    "bw2data": "4.7",
+    "numpy": "1.24.4",
+    "scipy": "1.13.1",
+    "scikit_umfpack": "0.3.3"
+  }
+}

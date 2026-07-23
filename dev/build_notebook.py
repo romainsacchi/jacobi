@@ -31,10 +31,10 @@ Open Tools and Development · Aalborg University & online
     markdown(r"""
 ## Run of show
 
-1. Start with bare synthetic technosphere matrices and solve (Ax=b) five ways.
+1. Start with bare synthetic technosphere matrices and solve $Ax=b$ five ways.
 2. Scale the same matrix family while measuring runtime, peak RSS, iterations, and residuals.
 3. Switch to `bw2calc.JacobiGMRESLCA` with one line of user-facing API change.
-4. Compare 100 paired BAFU Monte Carlo samples on identical matrices.
+4. Compare 200 paired BAFU Monte Carlo samples on identical matrices.
 
 The live workers have hard time limits. If a worker fails, the notebook uses committed calibration results and labels them as stored—not live—results.
 """),
@@ -86,11 +86,11 @@ RTOL = 1e-8
 }
 """),
     markdown(r"""
-# 1 · Strip LCA down to (Ax=b)
+# 1 · Strip LCA down to $Ax=b$
 
-- (A): technosphere matrix—positive production diagonal, negative inputs.
-- (b): demand vector—one unit of the functional unit.
-- (x): supply array—how much each activity must produce.
+- $A$: technosphere matrix—positive production diagonal, negative inputs.
+- $b$: demand vector—one unit of the functional unit.
+- $x$: supply array—how much each activity must produce.
 
 The first matrix is deliberately ill-scaled across four orders of magnitude. This makes the purpose of diagonal preconditioning visible without any biosphere or characterization matrices.
 """),
@@ -117,10 +117,10 @@ plt.show()
     markdown(r"""
 ## Five approaches, one solution
 
-- Dense LAPACK through `numpy.linalg.solve`—useful only while (A) is small.
+- Dense LAPACK through `numpy.linalg.solve`—useful only while $A$ is small.
 - Sparse SuperLU and UMFPACK—robust direct factorisations.
 - GMRES—approximate Krylov solve with an explicit residual tolerance.
-- Jacobi + GMRES—left-precondition with (D^{-1}), the reciprocal diagonal.
+- Jacobi + GMRES—left-precondition with $D^{-1}$, the reciprocal diagonal.
 
 The entire Jacobi preconditioner is the `LinearOperator` below; no dense inverse is created.
 """),
@@ -263,23 +263,24 @@ fig.tight_layout()
 plt.show()
 """),
     markdown(r"""
-## One 0.1%-density stress case
+## Two fixed-density stress cases
 
-With constant density, nonzeros grow with (n^2), not (n). This is less typical of ordinary databases, but representative of increasingly interconnected or regionalized systems—and matches the stress-test logic in the conference abstract.
+With constant density, nonzeros grow with $n^2$, not $n$. We first test 15,000 rows at 0.1% density, then add a larger and denser 20,000-row matrix at 0.2%. This is less typical of ordinary databases, but representative of increasingly interconnected or regionalized systems—and matches the stress-test logic in the conference abstract.
 """),
     code(r"""
-def live_or_stored_density():
-    live_path = ROOT / "results" / "live_density.json"
-    fallback = ROOT / "results" / "synthetic_density_calibration.json"
+def live_or_stored_density(size: int, density: float, live_name: str, fallback_name: str):
+    live_path = ROOT / "results" / live_name
+    fallback = ROOT / "results" / fallback_name
     if LIVE:
         command = [
             sys.executable,
             "dev/run_synthetic_suite.py",
             "--python", sys.executable,
             "--output", str(live_path),
-            "--sizes", "15000",
+            "--sizes", str(size),
             "--solvers", "jacobi-gmres", "umfpack",
             "--topology", "fixed-density",
+            "--density", str(density),
             "--run-timeout", "8",
             "--total-budget", "12",
         ]
@@ -291,11 +292,17 @@ def live_or_stored_density():
     return json.loads(fallback.read_text()), "STORED RESULTS"
 
 
-density_payload, density_source = live_or_stored_density()
-display(Markdown(f"**Result source: {density_source}**"))
-density_results = pd.json_normalize(density_payload["results"])
+density_cases = [
+    live_or_stored_density(15000, 0.001, "live_density.json", "synthetic_density_calibration.json"),
+    live_or_stored_density(20000, 0.002, "live_dense_large.json", "synthetic_dense_large_calibration.json"),
+]
+display(Markdown("**Result sources: " + " · ".join(source for _, source in density_cases) + "**"))
+density_results = pd.concat(
+    [pd.json_normalize(payload["results"]) for payload, _ in density_cases],
+    ignore_index=True,
+)
 density_results["incremental_peak_MiB"] = density_results["incremental_peak_rss_bytes"] / 2**20
-density_results[["solver", "size", "nnz", "solve_seconds", "incremental_peak_MiB", "iterations", "relative_residual", "timed_out"]]
+density_results[["solver", "size", "target_density", "nnz", "solve_seconds", "incremental_peak_MiB", "iterations", "relative_residual", "timed_out"]]
 """),
     markdown(r"""
 # 3 · The same switch inside Brightway
@@ -353,7 +360,7 @@ except Exception as error:
 }
 """),
     markdown(r"""
-> **Technical-spike guard—recheck before Brightcon:** in `bw2calc 2.5.0`, converting the active technosphere matrix to CSC detaches it from the stochastic matrix manager. The benchmark worker rebinds `self.technosphere_matrix = self.technosphere_mm.matrix` in `after_matrix_iteration`. Without this guard, later Monte Carlo iterations incorrectly reuse the first technosphere matrix. Remove the guard once this behavior is corrected upstream.
+> **Scope and local workaround—recheck before Brightcon:** in our tests this affects stochastic `JacobiGMRESLCA` only. Its CSC preparation detaches the active technosphere matrix from the stochastic matrix manager, so later Monte Carlo iterations would reuse the first matrix. Direct `LCA` does not take this route, and deterministic Jacobi does not advance the matrix. The fix is **not** in the installed `bw2calc 2.5.0`; this repository adds an `after_matrix_iteration` rebind in the benchmark worker. Remove the local guard once the behavior is corrected upstream.
 """),
     code(r"""
 def run_bafu_worker(solver: str, iterations: int, stochastic: bool, output: Path):
@@ -407,7 +414,7 @@ pd.DataFrame([
 ]).style.format({"seconds": "{:.3f}", "incremental peak MiB": "{:.1f}", "score": "{:.8f}", "relative residual": "{:.2e}"})
 """),
     markdown(r"""
-# 4 · 100 paired BAFU Monte Carlo samples
+# 4 · 200 paired BAFU Monte Carlo samples
 
 - Functional unit: **1 kWh Swiss low-voltage electricity at grid**.
 - Impact: **IPCC 2021 GWP100**.
@@ -420,12 +427,12 @@ from dev.compare_bafu_runs import summarize
 
 
 def monte_carlo_runs():
-    fallback_direct = ROOT / "results" / "bafu_direct_100.json"
-    fallback_iterative = ROOT / "results" / "bafu_jacobi_100.json"
+    fallback_direct = ROOT / "results" / "bafu_direct_200.json"
+    fallback_iterative = ROOT / "results" / "bafu_jacobi_200.json"
     if LIVE and BW_READY:
         try:
-            direct = run_bafu_worker("direct", 100, True, ROOT / "results" / "live_bafu_direct_100.json")
-            iterative = run_bafu_worker("jacobi-gmres", 100, True, ROOT / "results" / "live_bafu_jacobi_100.json")
+            direct = run_bafu_worker("direct", 200, True, ROOT / "results" / "live_bafu_direct_200.json")
+            iterative = run_bafu_worker("jacobi-gmres", 200, True, ROOT / "results" / "live_bafu_jacobi_200.json")
             return direct, iterative, "LIVE"
         except Exception as error:
             source = f"STORED FALLBACK ({type(error).__name__})"
@@ -441,19 +448,19 @@ display(Markdown(f"**Result source: {mc_source} · paired fingerprints match: YE
 pd.DataFrame([
     {
         "solver": "UMFPACK",
-        "100 samples [s]": mc_summary["direct"]["calculation_seconds"],
+        "200 samples [s]": mc_summary["direct"]["calculation_seconds"],
         "median iteration [ms]": mc_summary["direct"]["median_iteration_seconds_excluding_first"] * 1000,
         "incremental peak [MiB]": mc_summary["direct"]["incremental_peak_rss_bytes"] / 2**20,
         "median GMRES iterations": np.nan,
     },
     {
         "solver": "Jacobi + GMRES",
-        "100 samples [s]": mc_summary["jacobi_gmres"]["calculation_seconds"],
+        "200 samples [s]": mc_summary["jacobi_gmres"]["calculation_seconds"],
         "median iteration [ms]": mc_summary["jacobi_gmres"]["median_iteration_seconds_excluding_first"] * 1000,
         "incremental peak [MiB]": mc_summary["jacobi_gmres"]["incremental_peak_rss_bytes"] / 2**20,
         "median GMRES iterations": mc_summary["jacobi_gmres"]["median_gmres_iterations"],
     },
-]).style.format({"100 samples [s]": "{:.2f}", "median iteration [ms]": "{:.1f}", "incremental peak [MiB]": "{:.1f}", "median GMRES iterations": "{:.0f}"})
+]).style.format({"200 samples [s]": "{:.2f}", "median iteration [ms]": "{:.1f}", "incremental peak [MiB]": "{:.1f}", "median GMRES iterations": "{:.0f}"})
 """),
     code(r"""
 direct_scores = np.array([record["score"] for record in mc_direct["records"]])
@@ -462,7 +469,7 @@ iterative_scores = np.array([record["score"] for record in mc_iterative["records
 fig, axes = plt.subplots(2, 2, figsize=(10.5, 7.5))
 labels = ["UMFPACK", "Jacobi + GMRES"]
 axes[0, 0].bar(labels, [mc_summary["direct"]["calculation_seconds"], mc_summary["jacobi_gmres"]["calculation_seconds"]], color=["#DD8452", "#12A594"])
-axes[0, 0].set_ylabel("100 samples [s]")
+axes[0, 0].set_ylabel("200 samples [s]")
 axes[0, 0].set_title("At 11.7k rows, direct still wins")
 
 axes[0, 1].bar(labels, [mc_summary["direct"]["incremental_peak_rss_bytes"] / 2**20, mc_summary["jacobi_gmres"]["incremental_peak_rss_bytes"] / 2**20], color=["#DD8452", "#12A594"])
@@ -494,7 +501,7 @@ plt.show()
 
 1. **There is no universal winner.** BAFU's 11,747-row system is still faster with UMFPACK.
 2. **The crossover is structural.** As random cross-links and density generate fill-in, direct runtime and RAM rise sharply.
-3. **Approximation must be audited.** Report `rtol`, GMRES status, the measured (Ax-b) residual, and score agreement.
+3. **Approximation must be audited.** Report `rtol`, GMRES status, the measured $Ax-b$ residual, and score agreement.
 4. **Monte Carlo comparisons must be paired.** Equal seeds are not enough—verify matrix fingerprints.
 5. **Large systems change the practical limit.** Jacobi+GMRES avoids factorisation and can move a calculation from minutes to seconds while retaining controlled accuracy.
 
@@ -506,7 +513,7 @@ plt.show()
 - Run once on the conference VM with `BRIGHTCON_LIVE=1`.
 - Confirm the project is `brightcon-2026`, database is `bafu`, and activity code is `bafu-219622`.
 - Confirm the direct backend is UMFPACK or explicitly relabel it if Pardiso is used.
-- Recheck whether the stochastic matrix-rebinding guard is still needed in the installed `bw2calc`.
+- Recheck whether the repository-local stochastic `JacobiGMRESLCA` matrix-rebinding guard is still needed in the installed `bw2calc`.
 - Keep the committed results as a fallback, but never present them as live output.
 """),
 ]
