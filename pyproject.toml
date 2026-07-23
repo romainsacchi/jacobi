@@ -1,0 +1,17 @@
+[project]
+name = "brightcon-2026-jacobi-gmres"
+version = "0.1.0"
+description = "Notebook demo of Jacobi-preconditioned GMRES for large Brightway systems"
+requires-python = ">=3.11"
+dependencies = [
+  "bw2calc>=2.4.0,<3",
+  "ipykernel>=6.29,<7",
+  "jupyterlab>=4.2,<5",
+  "matplotlib>=3.9,<4",
+  "numpy>=1.26,<3",
+  "pandas>=2.2,<3",
+  "scipy>=1.13,<2",
+]
+
+[tool.uv]
+package = false

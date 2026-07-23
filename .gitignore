@@ -1,0 +1,29 @@
+# Python and environments
+__pycache__/
+*.py[cod]
+.venv/
+.python-version
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Local configuration
+.env
+.env.*
+.DS_Store
+
+# Restricted or machine-local data
+data/private/
+data/generated/
+*.pickle
+*.pkl
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
