@@ -1,0 +1,73 @@
+{
+  "kind": "bafu",
+  "solver": "jacobi-gmres",
+  "direct_backend": null,
+  "project": "clic-bafu-2025-ef31",
+  "database": "bafu",
+  "activity": {
+    "key": [
+      "bafu",
+      "bafu-219622"
+    ],
+    "id": 335447231488667652,
+    "name": "Electricity, low voltage, at grid",
+    "reference_product": "Electricity, low voltage, at grid",
+    "location": "CH",
+    "unit": "kilowatt hour",
+    "amount": 1.0
+  },
+  "method": [
+    "IPCC 2021",
+    "climate change",
+    "global warming potential (GWP100)"
+  ],
+  "method_unit": "kg CO2-Eq",
+  "stochastic": false,
+  "stochastic_matrix_rebind_fix": true,
+  "seed": 2026,
+  "iterations_requested": 1,
+  "use_guess": true,
+  "rtol": 1e-08,
+  "restart": 50,
+  "maxiter": 300,
+  "technosphere_shape": [
+    11747,
+    11747
+  ],
+  "technosphere_nnz": 113848,
+  "technosphere_density": 0.0008250332814561747,
+  "biosphere_shape": [
+    1807,
+    11747
+  ],
+  "biosphere_nnz": 248974,
+  "object_seconds": 0.050389999989420176,
+  "matrix_load_seconds": 0.05680499994195998,
+  "calculation_seconds": 0.07435508293565363,
+  "baseline_rss_bytes": 329105408,
+  "peak_rss_bytes": 335216640,
+  "incremental_peak_rss_bytes": 6111232,
+  "records": [
+    {
+      "iteration": 0,
+      "seconds": 0.06804312497843057,
+      "score": 0.09707145546378378,
+      "relative_residual": 9.573716598414918e-09,
+      "gmres_iterations": 40,
+      "gmres_info": 0,
+      "technosphere_fingerprint": "3a763d83641b862ad0986331",
+      "biosphere_fingerprint": "cce05fb1eee59742f2f9dc55"
+    }
+  ],
+  "environment": {
+    "python": "3.11.15",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "processor": "arm",
+    "physical_memory_bytes": 17179869184,
+    "bw2calc": "2.5.0",
+    "bw2data": "4.7",
+    "numpy": "1.24.4",
+    "scipy": "1.13.1",
+    "scikit_umfpack": "0.3.3"
+  }
+}

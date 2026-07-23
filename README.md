@@ -1,6 +1,6 @@
 # Jacobi + GMRES for large Brightway systems
 
-Materials for Romain Sacchi's 10-minute Brightcon 2026 presentation, **“From 8 minutes to 4 seconds: solving large systems with Jacobi+GMRES.”** The talk is scheduled for 25 September 2026 in the *Open Tools and Development* track at Aalborg University and online.
+Materials for Romain Sacchi's 8-minute Brightcon 2026 presentation, **“From 8 minutes to 4 seconds: solving large systems with Jacobi+GMRES.”** The talk is scheduled for 25 September 2026 in the *Open Tools and Development* track at Aalborg University and online.
 
 The repository demonstrates [`JacobiGMRESLCA`](https://docs.brightway.dev/en/latest/content/api/bw2calc/jacobi_gmres_lca/index.html), introduced in `bw2calc` 2.4.0. It combines:
 
@@ -15,9 +15,15 @@ The repository demonstrates [`JacobiGMRESLCA`](https://docs.brightway.dev/en/lat
 ├── AGENTS.md
 ├── data/
 │   ├── README.md
+│   ├── lci-bafu.xlsx
 │   └── reported_benchmarks.csv
+├── dev/
+│   ├── benchmark_bafu.py
+│   ├── benchmark_synthetic.py
+│   └── run_synthetic_suite.py
 ├── output/jupyter-notebook/
 │   └── brightcon-2026-jacobi-gmres.ipynb
+├── results/
 └── pyproject.toml
 ```
 
@@ -32,7 +38,13 @@ uv run jupyter lab output/jupyter-notebook/brightcon-2026-jacobi-gmres.ipynb
 
 Or install the dependencies from `pyproject.toml` in an existing Python 3.11+ environment and launch Jupyter Lab.
 
-The synthetic demonstration is self-contained. The final Brightway-specific cell needs `bw2calc>=2.4.0`; running a real LCA additionally requires a configured local Brightway project and inventory database.
+The synthetic demonstration is self-contained. The Brightway section expects a project named `brightcon-2026`, a database named `bafu`, and the IPCC 2021 GWP100 method. For development, override the project without editing the notebook:
+
+```bash
+BRIGHTCON_BW_PROJECT=clic-bafu-2025-ef31 uv run jupyter lab output/jupyter-notebook/brightcon-2026-jacobi-gmres.ipynb
+```
+
+Set `BRIGHTCON_LIVE=0` to use the committed calibration results instead of launching live workers.
 
 ## Data and reproducibility
 

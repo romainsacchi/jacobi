@@ -27,3 +27,6 @@ data/generated/
 build/
 dist/
 *.egg-info/
+
+# Presentation runs are retained locally; calibrated fallbacks are committed explicitly
+results/live_*.json
