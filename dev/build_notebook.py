@@ -34,7 +34,7 @@ Open Tools and Development · Aalborg University & online
 1. Start with bare synthetic technosphere matrices and solve $Ax=b$ five ways.
 2. Scale the same matrix family while measuring runtime, peak RSS, iterations, and residuals.
 3. Switch to `bw2calc.JacobiGMRESLCA` with one line of user-facing API change.
-4. Compare 200 paired BAFU Monte Carlo samples on identical matrices.
+4. Compare 500 paired BAFU Monte Carlo samples on identical matrices.
 
 The synthetic stress workers are deliberately uncapped so their actual factorisation times are visible. If a worker fails, the notebook uses committed calibration results and labels them as stored—not live—results.
 """),
@@ -427,7 +427,7 @@ pd.DataFrame([
 ]).style.format({"seconds": "{:.3f}", "incremental peak MiB": "{:.1f}", "score": "{:.8f}", "relative residual": "{:.2e}"})
 """),
     markdown(r"""
-# 4 · 200 paired BAFU Monte Carlo samples at `rtol=1e-4`
+# 4 · 500 paired BAFU Monte Carlo samples at `rtol=1e-4`
 
 - Functional unit: **1 kWh Swiss low-voltage electricity at grid**.
 - Impact: **IPCC 2021 GWP100**.
@@ -440,12 +440,12 @@ from dev.compare_bafu_runs import summarize
 
 
 def monte_carlo_runs():
-    fallback_direct = ROOT / "results" / "bafu_direct_200.json"
-    fallback_iterative = ROOT / "results" / "bafu_jacobi_200.json"
+    fallback_direct = ROOT / "results" / "bafu_direct_500.json"
+    fallback_iterative = ROOT / "results" / "bafu_jacobi_500.json"
     if LIVE and BW_READY:
         try:
-            direct = run_bafu_worker("direct", 200, True, ROOT / "results" / "live_bafu_direct_200.json")
-            iterative = run_bafu_worker("jacobi-gmres", 200, True, ROOT / "results" / "live_bafu_jacobi_200.json")
+            direct = run_bafu_worker("direct", 500, True, ROOT / "results" / "live_bafu_direct_500.json")
+            iterative = run_bafu_worker("jacobi-gmres", 500, True, ROOT / "results" / "live_bafu_jacobi_500.json")
             return direct, iterative, "LIVE"
         except Exception as error:
             source = f"STORED FALLBACK ({type(error).__name__})"
@@ -461,7 +461,7 @@ display(Markdown(f"**Result source: {mc_source} · paired fingerprints match: YE
 pd.DataFrame([
     {
         "solver": "UMFPACK",
-        "200 samples [s]": mc_summary["direct"]["calculation_seconds"],
+        "500 samples [s]": mc_summary["direct"]["calculation_seconds"],
         "median iteration [ms]": mc_summary["direct"]["median_iteration_seconds_excluding_first"] * 1000,
         "incremental peak [MiB]": mc_summary["direct"]["incremental_peak_rss_bytes"] / 2**20,
         "median GMRES iterations": np.nan,
@@ -469,13 +469,13 @@ pd.DataFrame([
     },
     {
         "solver": "Jacobi + GMRES",
-        "200 samples [s]": mc_summary["jacobi_gmres"]["calculation_seconds"],
+        "500 samples [s]": mc_summary["jacobi_gmres"]["calculation_seconds"],
         "median iteration [ms]": mc_summary["jacobi_gmres"]["median_iteration_seconds_excluding_first"] * 1000,
         "incremental peak [MiB]": mc_summary["jacobi_gmres"]["incremental_peak_rss_bytes"] / 2**20,
         "median GMRES iterations": mc_summary["jacobi_gmres"]["median_gmres_iterations"],
         "warm start": "yes",
     },
-]).style.format({"200 samples [s]": "{:.2f}", "median iteration [ms]": "{:.1f}", "incremental peak [MiB]": "{:.1f}", "median GMRES iterations": "{:.0f}"})
+]).style.format({"500 samples [s]": "{:.2f}", "median iteration [ms]": "{:.1f}", "incremental peak [MiB]": "{:.1f}", "median GMRES iterations": "{:.0f}"})
 """),
     code(r"""
 direct_scores = np.array([record["score"] for record in mc_direct["records"]])
@@ -484,7 +484,7 @@ iterative_scores = np.array([record["score"] for record in mc_iterative["records
 fig, axes = plt.subplots(2, 2, figsize=(10.5, 7.5))
 labels = ["UMFPACK", "Jacobi + GMRES"]
 axes[0, 0].bar(labels, [mc_summary["direct"]["calculation_seconds"], mc_summary["jacobi_gmres"]["calculation_seconds"]], color=["#DD8452", "#12A594"])
-axes[0, 0].set_ylabel("200 samples [s]")
+axes[0, 0].set_ylabel("500 samples [s]")
 axes[0, 0].set_title("Audited tolerance changes the winner")
 
 axes[0, 1].bar(labels, [mc_summary["direct"]["incremental_peak_rss_bytes"] / 2**20, mc_summary["jacobi_gmres"]["incremental_peak_rss_bytes"] / 2**20], color=["#DD8452", "#12A594"])

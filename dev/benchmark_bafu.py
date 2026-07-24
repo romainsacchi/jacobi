@@ -289,7 +289,7 @@ def main() -> None:
             "global warming potential (GWP100)",
         ),
     )
-    parser.add_argument("--iterations", type=int, default=200)
+    parser.add_argument("--iterations", type=int, default=500)
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument(
         "--stochastic", action=argparse.BooleanOptionalAction, default=True
