@@ -512,13 +512,88 @@ fig.tight_layout()
 plt.show()
 """),
     markdown(r"""
+## Dataset-wide fixed-matrix check: first 100 BAFU activities
+
+This is separate from Monte Carlo: the technosphere, biosphere, and characterization matrices are built once, then each of the first 100 BAFU activities is scored as a one-unit demand. UMFPACK factorizes once on the first demand and reuses that factorization; Jacobi+GMRES uses `rtol=1e-4` and `use_guess=True`.
+"""),
+    code(r"""
+from dev.compare_bafu_all_activities import summarize as summarize_all_activities
+
+
+def all_activity_runs():
+    fallback_direct = ROOT / "results" / "bafu_all_direct_100.json"
+    fallback_iterative = ROOT / "results" / "bafu_all_jacobi_100.json"
+    if LIVE and BW_READY:
+        try:
+            direct_command = [
+                sys.executable, "dev/benchmark_bafu_all_activities.py",
+                "--solver", "direct", "--project", BW_PROJECT, "--limit", "100",
+                "--output", str(ROOT / "results" / "live_bafu_all_direct_100.json"),
+            ]
+            iterative_command = [
+                sys.executable, "dev/benchmark_bafu_all_activities.py",
+                "--solver", "jacobi-gmres", "--project", BW_PROJECT, "--limit", "100",
+                "--rtol", str(RTOL), "--use-guess",
+                "--output", str(ROOT / "results" / "live_bafu_all_jacobi_100.json"),
+            ]
+            run_checked(direct_command, timeout=240)
+            run_checked(iterative_command, timeout=240)
+            return (
+                json.loads((ROOT / "results" / "live_bafu_all_direct_100.json").read_text()),
+                json.loads((ROOT / "results" / "live_bafu_all_jacobi_100.json").read_text()),
+                "LIVE",
+            )
+        except Exception as error:
+            source = f"STORED FALLBACK ({type(error).__name__})"
+    else:
+        source = "STORED RESULTS"
+    return json.loads(fallback_direct.read_text()), json.loads(fallback_iterative.read_text()), source
+
+
+all_direct, all_iterative, all_source = all_activity_runs()
+all_summary = summarize_all_activities(all_direct, all_iterative)
+display(Markdown(f"**Result source: {all_source} · same activity order: YES**"))
+pd.DataFrame([
+    {
+        "solver": "UMFPACK",
+        "100 dataset scores [s]": all_summary["direct"]["calculation_seconds"],
+        "per dataset [ms]": all_summary["direct"]["seconds_per_activity"] * 1000,
+        "incremental peak [MiB]": all_summary["direct"]["incremental_peak_rss_bytes"] / 2**20,
+        "factorized once": "yes",
+    },
+    {
+        "solver": "Jacobi + GMRES",
+        "100 dataset scores [s]": all_summary["jacobi_gmres"]["calculation_seconds"],
+        "per dataset [ms]": all_summary["jacobi_gmres"]["seconds_per_activity"] * 1000,
+        "incremental peak [MiB]": all_summary["jacobi_gmres"]["incremental_peak_rss_bytes"] / 2**20,
+        "factorized once": "no",
+    },
+]).style.format({"100 dataset scores [s]": "{:.2f}", "per dataset [ms]": "{:.2f}", "incremental peak [MiB]": "{:.1f}"})
+
+direct_activity_scores = np.array([record["score"] for record in all_direct["records"]])
+iterative_activity_scores = np.array([record["score"] for record in all_iterative["records"]])
+relative_activity_difference = np.abs(iterative_activity_scores - direct_activity_scores) / np.maximum(np.abs(direct_activity_scores), np.finfo(float).tiny)
+fig, axis = plt.subplots(figsize=(8.5, 3.5))
+axis.plot(np.arange(1, len(relative_activity_difference) + 1), relative_activity_difference, ".", color="#315B7D")
+axis.axhline(1e-4, linestyle="--", color="#DD8452", linewidth=1, label="0.01% reference")
+axis.set_yscale("log")
+axis.set_xlabel("BAFU activity rank by database ID")
+axis.set_ylabel("relative score difference [log]")
+axis.set_title(f"Dataset-wide score agreement; maximum = {relative_activity_difference.max():.1e}")
+axis.grid(alpha=0.2, which="both")
+axis.legend(frameon=False)
+fig.tight_layout()
+plt.show()
+"""),
+    markdown(r"""
 # Takeaways
 
 1. **Tolerance can change the winner.** At `rtol=1e-4`, warm-started Jacobi+GMRES overtakes UMFPACK on the 11,747-row BAFU system.
 2. **The crossover is structural.** As random cross-links and density generate fill-in, direct runtime and RAM rise sharply.
 3. **Approximation must be audited.** Report `rtol`, GMRES status, the measured $Ax-b$ residual, and score agreement.
 4. **Monte Carlo comparisons must be paired.** Equal seeds are not enough—verify matrix fingerprints.
-5. **Large systems change the practical limit.** Jacobi+GMRES avoids factorisation and can move a calculation from minutes to seconds while retaining controlled accuracy.
+5. **Dataset-wide scores are a different workload.** Reusing one direct factorization makes UMFPACK competitive for many demands; iterative methods should be judged on both solve time and score agreement.
+6. **Large systems change the practical limit.** Jacobi+GMRES avoids factorisation and can move a calculation from minutes to seconds while retaining controlled accuracy.
 
 > Use direct solving by default; switch when measured factorisation cost—not fashion—justifies it.
 """),

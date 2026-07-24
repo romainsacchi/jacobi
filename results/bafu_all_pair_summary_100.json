@@ -1,0 +1,31 @@
+{
+  "activity_count": 100,
+  "same_activity_order": true,
+  "direct": {
+    "calculation_seconds": 0.6772250409703702,
+    "seconds_per_activity": 0.006772250409703702,
+    "incremental_peak_rss_bytes": 20381696,
+    "factorized_once": true,
+    "characterization_matrix_built_once": true
+  },
+  "jacobi_gmres": {
+    "calculation_seconds": 7.801351333968341,
+    "seconds_per_activity": 0.07801351333968341,
+    "incremental_peak_rss_bytes": 12435456,
+    "rtol": 0.0001,
+    "use_guess": true,
+    "median_gmres_iterations": 44.0,
+    "maximum_relative_residual": 9.887972638711502e-05,
+    "characterization_matrix_built_once": true
+  },
+  "score_agreement": {
+    "maximum_absolute_difference": 0.006600210443139076,
+    "median_absolute_difference": 4.151634448135155e-05,
+    "maximum_relative_difference": 0.00015765357039259658,
+    "median_relative_difference": 1.1106561544431496e-08,
+    "direct_mean": 113922.87006845613,
+    "iterative_mean": 113922.87003326963,
+    "direct_median": 2953.959018396975,
+    "iterative_median": 2953.958982079991
+  }
+}
