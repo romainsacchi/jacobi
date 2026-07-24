@@ -20,7 +20,7 @@ import numpy as np
 import psutil
 import scipy
 from scipy import sparse
-from scipy.sparse.linalg import LinearOperator, gmres, spsolve
+from scipy.sparse.linalg import LinearOperator, gmres, splu, spsolve
 
 
 @dataclass
@@ -79,19 +79,56 @@ def constant_degree_matrix(
 
 
 def fixed_density_matrix(
-    n: int, density: float, seed: int, diagonal_span: float
+    n: int,
+    density: float,
+    seed: int,
+    diagonal_span: float,
+    family: str = "lca-random",
+    blocks: int = 8,
 ) -> sparse.csc_matrix:
     if not 0 < density < 1:
         raise ValueError("density must be between zero and one")
     rng = np.random.default_rng(seed)
-    off_diagonal = sparse.random(
-        n,
-        n,
-        density=density,
-        format="csc",
-        random_state=rng,
-        data_rvs=lambda size: rng.uniform(0.01, 0.04, size),
-    )
+    if family == "lca-random":
+        off_diagonal = sparse.random(
+            n,
+            n,
+            density=density,
+            format="csc",
+            random_state=rng,
+            data_rvs=lambda size: rng.uniform(0.01, 0.04, size),
+        )
+    elif family == "io-block":
+        if blocks < 1 or blocks > n:
+            raise ValueError("blocks must be between 1 and n")
+        block_sizes = np.full(blocks, n // blocks, dtype=int)
+        block_sizes[: n % blocks] += 1
+        local_density = min(1.0, density * 0.8 * blocks)
+        local = sparse.block_diag(
+            [
+                sparse.random(
+                    size,
+                    size,
+                    density=local_density,
+                    format="csc",
+                    random_state=rng,
+                    data_rvs=lambda count: rng.uniform(0.001, 0.02, count),
+                )
+                for size in block_sizes
+            ],
+            format="csc",
+        )
+        cross = sparse.random(
+            n,
+            n,
+            density=density * 0.2,
+            format="csc",
+            random_state=rng,
+            data_rvs=lambda size: rng.uniform(0.0001, 0.005, size),
+        )
+        off_diagonal = local + cross
+    else:
+        raise ValueError(f"Unknown matrix family: {family}")
     off_diagonal.setdiag(0.0)
     off_diagonal.eliminate_zeros()
 
@@ -132,6 +169,10 @@ def solve(
         import scikits.umfpack  # noqa: F401
 
         return spsolve(matrix, demand, use_umfpack=True), None, 0
+    if solver == "pardiso":
+        from pypardiso import spsolve as pardiso_spsolve
+
+        return pardiso_spsolve(matrix, demand), None, 0
 
     residual_history: list[float] = []
     preconditioner = None
@@ -162,6 +203,72 @@ def solve(
     return solution, int(info), len(residual_history)
 
 
+def solve_many(
+    matrix: sparse.csc_matrix,
+    demands: list[np.ndarray],
+    solver: str,
+    rtol: float,
+    restart: int,
+    maxiter: int,
+) -> tuple[list[np.ndarray], int | None, list[int], float, float, float | None]:
+    """Solve multiple right-hand sides and separate setup from repeated solves."""
+    factorization_seconds = 0.0
+    fill_ratio = None
+    info: int | None = None
+    iterations: list[int] = []
+
+    if solver == "numpy-dense":
+        dense = matrix.toarray()
+        started = time.perf_counter()
+        solutions = [np.linalg.solve(dense, demand) for demand in demands]
+        return solutions, None, [0] * len(demands), 0.0, time.perf_counter() - started, None
+
+    if solver == "superlu":
+        started = time.perf_counter()
+        factor = splu(matrix)
+        factorization_seconds = time.perf_counter() - started
+        fill_ratio = float((factor.L.nnz + factor.U.nnz) / matrix.nnz)
+        started = time.perf_counter()
+        solutions = [factor.solve(demand) for demand in demands]
+        rhs_seconds = time.perf_counter() - started
+        return solutions, None, [0] * len(demands), factorization_seconds, rhs_seconds, fill_ratio
+
+    if solver == "umfpack":
+        import scikits.umfpack as umfpack
+
+        context = umfpack.UmfpackContext()
+        started = time.perf_counter()
+        lower, upper, *_ = context.lu(matrix)
+        factorization_seconds = time.perf_counter() - started
+        fill_ratio = float((lower.nnz + upper.nnz) / matrix.nnz)
+        started = time.perf_counter()
+        solutions = [
+            context.solve(umfpack.UMFPACK_A, matrix, demand) for demand in demands
+        ]
+        rhs_seconds = time.perf_counter() - started
+        return solutions, None, [0] * len(demands), factorization_seconds, rhs_seconds, fill_ratio
+
+    if solver == "pardiso":
+        from pypardiso import spsolve as pardiso_spsolve
+
+        started = time.perf_counter()
+        solutions = [pardiso_spsolve(matrix, demand) for demand in demands]
+        rhs_seconds = time.perf_counter() - started
+        return solutions, None, [0] * len(demands), 0.0, rhs_seconds, None
+
+    solutions = []
+    started = time.perf_counter()
+    for demand in demands:
+        solution, current_info, current_iterations = solve(
+            matrix, demand, solver, rtol, restart, maxiter
+        )
+        solutions.append(solution)
+        iterations.append(current_iterations)
+        if current_info not in (None, 0):
+            info = current_info
+    return solutions, info or 0, iterations, 0.0, time.perf_counter() - started, None
+
+
 def package_version(name: str) -> str | None:
     try:
         return importlib.metadata.version(name)
@@ -170,26 +277,42 @@ def package_version(name: str) -> str | None:
 
 
 def run(args: argparse.Namespace) -> dict[str, object]:
-    started = time.perf_counter()
-    if args.topology == "constant-degree":
-        matrix = constant_degree_matrix(
-            args.size, args.degree, args.seed, args.diagonal_span
-        )
-    else:
-        matrix = fixed_density_matrix(
-            args.size, args.density, args.seed, args.diagonal_span
-        )
-    generation_seconds = time.perf_counter() - started
+    with MemoryMonitor() as generation_memory:
+        started = time.perf_counter()
+        if args.topology == "constant-degree":
+            matrix = constant_degree_matrix(
+                args.size, args.degree, args.seed, args.diagonal_span
+            )
+        else:
+            matrix = fixed_density_matrix(
+                args.size,
+                args.density,
+                args.seed,
+                args.diagonal_span,
+                family=args.matrix_family,
+                blocks=args.blocks,
+            )
+        generation_seconds = time.perf_counter() - started
 
-    demand = np.zeros(args.size)
-    demand[0] = 1.0
+    demands = []
+    for index in range(args.rhs_count):
+        demand = np.zeros(args.size)
+        demand[index % args.size] = 1.0
+        demands.append(demand)
     matrix_bytes = matrix.data.nbytes + matrix.indices.nbytes + matrix.indptr.nbytes
 
     with MemoryMonitor() as memory:
         started = time.perf_counter()
-        solution, info, iterations = solve(
+        (
+            solutions,
+            info,
+            iterations,
+            factorization_seconds,
+            rhs_solve_seconds,
+            fill_ratio,
+        ) = solve_many(
             matrix,
-            demand,
+            demands,
             args.solver,
             args.rtol,
             args.restart,
@@ -197,14 +320,18 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         )
         solve_seconds = time.perf_counter() - started
 
-    relative_residual = float(
-        np.linalg.norm(matrix @ solution - demand) / np.linalg.norm(demand)
-    )
+    residuals = [
+        float(np.linalg.norm(matrix @ solution - demand) / np.linalg.norm(demand))
+        for solution, demand in zip(solutions, demands)
+    ]
+    relative_residual = max(residuals)
     converged = info in (None, 0) and relative_residual <= max(args.rtol * 10, 1e-12)
 
     return {
         "kind": "synthetic",
         "topology": args.topology,
+        "matrix_family": args.matrix_family,
+        "blocks": args.blocks if args.matrix_family == "io-block" else None,
         "solver": args.solver,
         "size": args.size,
         "shape": [args.size, args.size],
@@ -220,11 +347,18 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         "restart": args.restart,
         "maxiter": args.maxiter,
         "generation_seconds": generation_seconds,
+        "generation_incremental_peak_rss_bytes": generation_memory.incremental_peak_bytes,
         "solve_seconds": solve_seconds,
+        "factorization_seconds": factorization_seconds,
+        "rhs_solve_seconds": rhs_solve_seconds,
+        "rhs_count": args.rhs_count,
+        "seconds_per_rhs": rhs_solve_seconds / args.rhs_count,
+        "lu_fill_ratio": fill_ratio,
         "baseline_rss_bytes": memory.baseline_bytes,
         "peak_rss_bytes": memory.peak_bytes,
         "incremental_peak_rss_bytes": memory.incremental_peak_bytes,
-        "iterations": iterations,
+        "iterations": max(iterations, default=0),
+        "iterations_per_rhs": iterations,
         "solver_info": info,
         "relative_residual": relative_residual,
         "converged": converged,
@@ -244,7 +378,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--solver",
-        choices=("numpy-dense", "superlu", "umfpack", "gmres", "jacobi-gmres"),
+        choices=("numpy-dense", "superlu", "umfpack", "pardiso", "gmres", "jacobi-gmres"),
         required=True,
     )
     parser.add_argument(
@@ -255,6 +389,11 @@ def main() -> None:
     parser.add_argument("--size", type=int, required=True)
     parser.add_argument("--degree", type=int, default=8)
     parser.add_argument("--density", type=float, default=0.001)
+    parser.add_argument(
+        "--matrix-family", choices=("lca-random", "io-block"), default="lca-random"
+    )
+    parser.add_argument("--blocks", type=int, default=8)
+    parser.add_argument("--rhs-count", type=int, default=1)
     parser.add_argument("--diagonal-span", type=float, default=4.0)
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument("--rtol", type=float, default=1e-4)
