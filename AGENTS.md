@@ -59,16 +59,15 @@ should be used for live rehearsal.
 The notebook proceeds top-to-bottom:
 
 1. Bare `Ax=b`: dense NumPy, SuperLU, UMFPACK, GMRES, and Jacobi+GMRES.
-2. Synthetic runtime/RSS/iteration/residual scaling.
-3. Fixed-density stress cases and a runtime line graph.
-4. Deterministic BAFU direct versus Jacobi.
-5. 500 paired BAFU Monte Carlo samples.
-6. First 100 BAFU activities on one fixed matrix.
+2. Synthetic runtime/RSS/iteration/residual scaling at fixed connectivity.
+3. Connectivity-versus-size, guarded density, and block-structured stress cases.
+4. Fixed synthetic matrix with many right-hand sides.
+5. Synthetic changing-matrix repeated solves.
 7. Takeaways and presenter preflight.
 
-The main Monte Carlo configuration is fixed at `rtol=1e-4`, `use_guess=True`, seed 2026,
-and the local stochastic matrix-rebinding safeguard. The exploratory `rtol=1e-3` results remain
-separate and must not replace the main setting.
+The synthetic iterative configuration is fixed at `rtol=1e-4`, seed 2026, with paired matrices and
+demands. The BAFU Monte Carlo configuration remains available in the worker scripts as optional
+supporting material, but is no longer executed by the main presentation notebook.
 
 ## Benchmark regimes
 
@@ -87,6 +86,31 @@ Current fixed-density calibrations use `rtol=1e-4`:
 A future size/density grid must be safe. A 200,000 x 200,000 matrix at 10% density implies
 about 4 billion nonzeros and can exhaust memory during construction before a solve timeout.
 Add an estimated-nnz/memory guard and label cells `SKIPPED`, `TIMEOUT`, or completed.
+
+The live notebook now separates two effects:
+
+- fixed-connectivity scaling at 5 and 25 inputs per activity, across 1,000, 5,000, and 10,000
+  rows;
+- a large fixed-connectivity extension at 50,000, 100,000, and 300,000 rows, using only UMFPACK,
+  GMRES, and Jacobi + GMRES with isolated 120-second workers and a 15-minute suite budget;
+- a fixed-density grid at 0.1%, 0.3%, 1%, 3%, 5%, 10%, and 15% for bounded matrix sizes.
+
+The density grid is run in isolated workers with a machine-aware estimated construction-memory cap
+equal to 25% of currently available RAM, bounded between 512 MiB and 8 GiB. Each worker has a
+45-second timeout and emits explicit `COMPLETED`/`SKIPPED`/`TIMEOUT`/`FAILED` statuses. This allows direct
+factorization to run when the host has sufficient RAM while still preventing unbounded matrix
+construction. A 20,000 × 20,000 matrix at 15% density would contain roughly 60 million nonzeros
+before sparse construction and LU fill-in overhead, so completion still depends on actual memory
+and fill-in behavior.
+
+The notebook also runs a small `io-block` family at 1%, 5%, and 15% density. Density is not a
+complete structural descriptor: block structure, diagonal dominance, coefficient scaling, and LU
+fill-in can change solver behavior at the same nominal density.
+
+Synthetic records include matrix construction time, estimated and actual storage, peak RSS, solver
+time, factorization time, repeated-RHS time, LU fill ratio when available, iterations, residual,
+convergence status, and environment metadata. The notebook visualizes runtime-versus-density and
+`log10(UMFPACK time / Jacobi time)` heatmaps; positive heatmap values favor Jacobi.
 
 ### Fixed-matrix all-activity benchmark
 
@@ -153,13 +177,28 @@ assert technosphere and biosphere fingerprints before comparing scores.
 
 Never commit proprietary ecoinvent data, credentials, private project names, or local paths.
 
+### Validated environment
+
+The live project was reproduced on macOS arm64 in a Conda environment named `jacobi-bw` with:
+
+- Python 3.14.6;
+- NumPy 2.5.1;
+- SciPy 1.18.0;
+- scikit-umfpack 0.4.2 and SuiteSparse 7.10.1;
+- bw2calc 2.5.0, bw2data 4.7, and bw2io 0.9.17.
+
+`pip check`, a direct `scikits.umfpack.spsolve`, and a BAFU LCIA all passed. The validated score
+for one kilowatt hour of `bafu-219622` with the required IPCC method was approximately
+`0.09707145849913332 kg CO2-Eq`. Treat this as an installation smoke test, not a replacement for
+the committed benchmark results.
+
 ## Validation commands
 
 From the repository root:
 
 ```bash
 black --target-version py311 --fast --check dev
-/opt/homebrew/Caskroom/miniforge/base/envs/bw/bin/python -m compileall -q dev
+conda run -n jacobi-bw python -m compileall -q dev
 find results -maxdepth 1 -name '*.json' -print0 | xargs -0 -n1 jq empty
 git diff --check
 ```
@@ -168,7 +207,7 @@ Render using stored results without a Brightway live run:
 
 ```bash
 BRIGHTCON_LIVE=0 \
-  /opt/homebrew/Caskroom/miniforge/base/envs/bw/bin/python -m jupyter nbconvert \
+  conda run -n jacobi-bw python -m jupyter nbconvert \
   --to notebook --execute --inplace --ExecutePreprocessor.timeout=180 \
   output/jupyter-notebook/brightcon-2026-jacobi-gmres.ipynb
 ```
@@ -177,7 +216,7 @@ For live rehearsal on a faster VM:
 
 ```bash
 BRIGHTCON_BW_PROJECT=<project-name> \
-  /opt/homebrew/Caskroom/miniforge/base/envs/bw/bin/python -m jupyter nbconvert \
+  conda run -n jacobi-bw python -m jupyter nbconvert \
   --to notebook --execute --inplace --ExecutePreprocessor.timeout=360 \
   output/jupyter-notebook/brightcon-2026-jacobi-gmres.ipynb
 ```
@@ -193,16 +232,26 @@ are licensed/external data and must be prepared on the target computer.
 
 ### Install dependencies
 
-Use Python 3.11 or newer:
+The tested setup uses Conda for the compiled numerical stack and PyPI for current Brightway
+releases. Conda-forge only offered bw2calc 2.4.0 during the validated installation, so do not add
+the Brightway packages to the `conda create` command if reproducing bw2calc 2.5.0 exactly:
 
 ```bash
-uv sync
+conda create -n jacobi-bw -c conda-forge -y \
+  python=3.14.6 numpy=2.5.1 scipy=1.18.0 scikit-umfpack=0.4.2 pip
+
+conda run -n jacobi-bw python -m pip install \
+  'bw2calc==2.5.0' 'bw2data==4.7' 'bw2io==0.9.17' \
+  'ipykernel>=6.29,<8' 'jupyterlab>=4.2,<5' 'matplotlib>=3.9,<4' \
+  'nbformat>=5.10,<6' 'openpyxl>=3.1,<4' 'pandas>=3.0.5,<4' 'psutil>=6,<8'
+
+conda run -n jacobi-bw python -m pip check
 ```
 
-If `uv` is unavailable, install the dependencies listed in `pyproject.toml` into an equivalent
-environment. `scikit-umfpack` additionally requires a working SuiteSparse/UMFPACK installation
-and compiler/runtime support. A machine using Pardiso may substitute that backend, but notebook
-labels and metadata must be changed accordingly.
+The exact core constraints are also recorded in `pyproject.toml`. `scikit-umfpack` requires a
+working SuiteSparse/UMFPACK installation; installing both through Conda avoids a local source
+build. A machine using Pardiso may substitute that backend, but notebook labels and metadata must
+be changed accordingly.
 
 ### Create/select a project
 
@@ -218,6 +267,28 @@ bd.projects.set_current(PROJECT)
 ```
 
 Any project name is acceptable if passed through `BRIGHTCON_BW_PROJECT`.
+
+If a local project named `ecoinvent-3.10-cutoff` already contains the licensed cutoff database,
+its matching biosphere, and LCIA methods, the tested and fastest reconstruction path is to copy it:
+
+```python
+import bw2data as bd
+
+SOURCE = "ecoinvent-3.10-cutoff"
+TARGET = "brightcon-2026"
+if TARGET not in {project.name for project in bd.projects}:
+    bd.projects.set_current(SOURCE)
+    bd.projects.copy_project(TARGET, switch=True)
+else:
+    bd.projects.set_current(TARGET)
+
+assert "ecoinvent-3.10-biosphere" in bd.databases
+```
+
+Copying preserves the licensed database and methods in Brightway's external data directory; it
+does not place them in this repository. A new bw2data version can perform a one-time project
+metadata/datapackage migration on first access. Verify the source environment can still open the
+project after such a migration.
 
 ### Import the licensed ecoinvent 3.10 biosphere
 
@@ -251,17 +322,50 @@ import bw2io as bi
 bd.projects.set_current("brightcon-2026")
 importer = bi.ExcelImporter("data/lci-bafu.xlsx")
 importer.apply_strategies()
-importer.statistics()
 
 BIOSPHERE_DATABASE = "ecoinvent-3.10-biosphere"  # replace with the local name
+# Link the workbook's technosphere and production exchanges to its own activities.
+importer.match_database(
+    fields=["name", "reference product", "unit", "location"]
+)
+# Link elementary flows to the external ecoinvent 3.10 biosphere.
 importer.match_database(BIOSPHERE_DATABASE, fields=["name", "categories", "unit"])
 importer.statistics()
+unlinked = list(importer.unlinked)
+if unlinked:
+    raise ValueError(f"Refusing to import with {len(unlinked)} unlinked exchanges")
 importer.write_database()
 ```
 
-Review unmatched exchanges before `write_database()`. Resolve custom or renamed flows explicitly;
-do not silently accept unmatched biosphere exchanges. The resulting database must be named `bafu`
-unless every worker/notebook reference is changed consistently.
+The internal match is required: matching only the biosphere leaves all BAFU technosphere and
+production exchanges unlinked. Review any unmatched exchanges before `write_database()`; resolve
+custom or renamed flows explicitly. The resulting database must be named `bafu` unless every
+worker/notebook reference is changed consistently.
+
+### Install the notebook-compatible LCIA method name
+
+The ecoinvent 3.10 import stores the required method as a four-part tuple prefixed by
+`"ecoinvent-3.10"`, while the notebook deliberately requests a three-part tuple. Register an
+alias containing the same characterization factors:
+
+```python
+import bw2data as bd
+
+bd.projects.set_current("brightcon-2026")
+source = (
+    "ecoinvent-3.10",
+    "IPCC 2021",
+    "climate change",
+    "global warming potential (GWP100)",
+)
+target = ("IPCC 2021", "climate change", "global warming potential (GWP100)")
+if target not in bd.methods:
+    if source not in bd.methods:
+        raise ValueError(f"Missing source LCIA method: {source}")
+    method = bd.Method(target)
+    method.register(**dict(bd.Method(source).metadata))
+    method.write(bd.Method(source).load())
+```
 
 ### Validate and run
 
