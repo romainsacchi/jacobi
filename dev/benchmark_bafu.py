@@ -300,7 +300,7 @@ def main() -> None:
     parser.add_argument(
         "--use-guess", action=argparse.BooleanOptionalAction, default=True
     )
-    parser.add_argument("--rtol", type=float, default=1e-8)
+    parser.add_argument("--rtol", type=float, default=1e-4)
     parser.add_argument("--restart", type=int, default=50)
     parser.add_argument("--maxiter", type=int, default=300)
     parser.add_argument("--output", type=Path)

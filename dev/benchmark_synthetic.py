@@ -257,7 +257,7 @@ def main() -> None:
     parser.add_argument("--density", type=float, default=0.001)
     parser.add_argument("--diagonal-span", type=float, default=4.0)
     parser.add_argument("--seed", type=int, default=2026)
-    parser.add_argument("--rtol", type=float, default=1e-8)
+    parser.add_argument("--rtol", type=float, default=1e-4)
     parser.add_argument("--restart", type=int, default=50)
     parser.add_argument("--maxiter", type=int, default=300)
     args = parser.parse_args()

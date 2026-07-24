@@ -32,25 +32,25 @@
     "peak_rss_bytes": 466370560
   },
   "jacobi_gmres": {
-    "calculation_seconds": 10.724891458172351,
-    "median_iteration_seconds_excluding_first": 0.0465080828871578,
-    "incremental_peak_rss_bytes": 88522752,
-    "peak_rss_bytes": 457490432,
+    "calculation_seconds": 9.001113709062338,
+    "median_iteration_seconds_excluding_first": 0.03919329191558063,
+    "incremental_peak_rss_bytes": 81264640,
+    "peak_rss_bytes": 458735616,
     "use_guess": true,
-    "rtol": 0.0001,
-    "median_gmres_iterations": 19.0,
-    "maximum_gmres_iterations": 26,
-    "maximum_relative_residual": 9.94683127283773e-05,
+    "rtol": 0.001,
+    "median_gmres_iterations": 14.0,
+    "maximum_gmres_iterations": 21,
+    "maximum_relative_residual": 0.000995487431250016,
     "stochastic_matrix_rebind_fix": true
   },
   "score_agreement": {
-    "maximum_absolute_difference": 0.00018180689522200033,
-    "median_absolute_difference": 4.7718605807871295e-05,
-    "maximum_relative_difference": 0.0015976712962795703,
-    "median_relative_difference": 0.00043847099534738475,
+    "maximum_absolute_difference": 0.0015636180978759046,
+    "median_absolute_difference": 0.000625951367444727,
+    "maximum_relative_difference": 0.015243043554779765,
+    "median_relative_difference": 0.0054171013703478745,
     "direct_mean": 0.1097036871144088,
     "direct_standard_deviation": 0.014620182261638475,
-    "iterative_mean": 0.1097089092444767,
-    "iterative_standard_deviation": 0.014598907661469514
+    "iterative_mean": 0.10975973191995755,
+    "iterative_standard_deviation": 0.014268908839948618
   }
 }

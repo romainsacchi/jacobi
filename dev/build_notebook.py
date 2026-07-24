@@ -36,7 +36,7 @@ Open Tools and Development · Aalborg University & online
 3. Switch to `bw2calc.JacobiGMRESLCA` with one line of user-facing API change.
 4. Compare 200 paired BAFU Monte Carlo samples on identical matrices.
 
-The live workers have hard time limits. If a worker fails, the notebook uses committed calibration results and labels them as stored—not live—results.
+The synthetic stress workers are deliberately uncapped so their actual factorisation times are visible. If a worker fails, the notebook uses committed calibration results and labels them as stored—not live—results.
 """),
     code(r"""
 from __future__ import annotations
@@ -74,7 +74,7 @@ DATABASE = "bafu"
 ACTIVITY_CODE = "bafu-219622"
 METHOD = ("IPCC 2021", "climate change", "global warming potential (GWP100)")
 SEED = 2026
-RTOL = 1e-8
+RTOL = 1e-4
 
 {
     "live workers": LIVE,
@@ -189,10 +189,10 @@ _, _, jacobi_iterations = krylov(A_unit, b_unit, jacobi=True)
 
 Each solver runs in a fresh subprocess. This prevents one factorisation from contaminating the next solver's peak memory. A 2 ms RSS sampler captures allocations made by NumPy, SciPy, UMFPACK, and BLAS—not only Python objects. Incremental RSS is measured above the post-matrix-construction baseline.
 
-Main series: approximately eight inputs per activity. Dense solving stops at 2,500 activities; individual workers stop after eight seconds.
+Main series: approximately eight inputs per activity. Dense solving stops at 2,500 activities; the remaining isolated workers run to completion without a benchmark timeout.
 """),
     code(r"""
-def run_checked(command: list[str], timeout: float) -> subprocess.CompletedProcess[str]:
+def run_checked(command: list[str], timeout: float | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         command,
         cwd=ROOT,
@@ -213,11 +213,10 @@ def live_or_stored_synthetic():
             "--python", sys.executable,
             "--output", str(live_path),
             "--sizes", "500", "1000", "2500", "5000", "10000",
-            "--run-timeout", "8",
-            "--total-budget", "45",
+            "--rtol", str(RTOL),
         ]
         try:
-            run_checked(command, timeout=55)
+            run_checked(command)
             return json.loads(live_path.read_text()), "LIVE"
         except Exception as error:
             return json.loads(fallback.read_text()), f"STORED FALLBACK ({type(error).__name__})"
@@ -263,12 +262,12 @@ fig.tight_layout()
 plt.show()
 """),
     markdown(r"""
-## Two fixed-density stress cases
+## Uncapped fixed-density stress test
 
-With constant density, nonzeros grow with $n^2$, not $n$. We first test 15,000 rows at 0.1% density, then add a larger and denser 20,000-row matrix at 0.2%. This is less typical of ordinary databases, but representative of increasingly interconnected or regionalized systems—and matches the stress-test logic in the conference abstract.
+With constant density, nonzeros grow with $n^2$, not $n$. We sweep 5,000–20,000 rows at 0.1% density, then add a 20,000-row matrix at 0.2%. Every solver runs to completion in an isolated worker—there is no benchmark timeout. This is less typical of ordinary databases, but representative of increasingly interconnected or regionalized systems—and matches the stress-test logic in the conference abstract.
 """),
     code(r"""
-def live_or_stored_density(size: int, density: float, live_name: str, fallback_name: str):
+def live_or_stored_density(sizes: list[int], density: float, live_name: str, fallback_name: str):
     live_path = ROOT / "results" / live_name
     fallback = ROOT / "results" / fallback_name
     if LIVE:
@@ -277,15 +276,14 @@ def live_or_stored_density(size: int, density: float, live_name: str, fallback_n
             "dev/run_synthetic_suite.py",
             "--python", sys.executable,
             "--output", str(live_path),
-            "--sizes", str(size),
-            "--solvers", "jacobi-gmres", "umfpack",
+            "--sizes", *(str(size) for size in sizes),
+            "--solvers", "umfpack", "gmres", "jacobi-gmres",
             "--topology", "fixed-density",
             "--density", str(density),
-            "--run-timeout", "8",
-            "--total-budget", "12",
+            "--rtol", str(RTOL),
         ]
         try:
-            run_checked(command, timeout=18)
+            run_checked(command)
             return json.loads(live_path.read_text()), "LIVE"
         except Exception as error:
             return json.loads(fallback.read_text()), f"STORED FALLBACK ({type(error).__name__})"
@@ -293,8 +291,8 @@ def live_or_stored_density(size: int, density: float, live_name: str, fallback_n
 
 
 density_cases = [
-    live_or_stored_density(15000, 0.001, "live_density.json", "synthetic_density_calibration.json"),
-    live_or_stored_density(20000, 0.002, "live_dense_large.json", "synthetic_dense_large_calibration.json"),
+    live_or_stored_density([5000, 10000, 15000, 20000], 0.001, "live_density.json", "synthetic_density_calibration.json"),
+    live_or_stored_density([20000], 0.002, "live_dense_large.json", "synthetic_dense_large_calibration.json"),
 ]
 display(Markdown("**Result sources: " + " · ".join(source for _, source in density_cases) + "**"))
 density_results = pd.concat(
@@ -302,7 +300,20 @@ density_results = pd.concat(
     ignore_index=True,
 )
 density_results["incremental_peak_MiB"] = density_results["incremental_peak_rss_bytes"] / 2**20
-density_results[["solver", "size", "target_density", "nnz", "solve_seconds", "incremental_peak_MiB", "iterations", "relative_residual", "timed_out"]]
+display(density_results[["solver", "size", "target_density", "nnz", "solve_seconds", "incremental_peak_MiB", "iterations", "relative_residual"]])
+
+fig, axis = plt.subplots(figsize=(8.5, 4.2))
+for solver, subset in density_results.sort_values("nnz").groupby("solver"):
+    axis.plot(subset["nnz"], subset["solve_seconds"], "o-", label=solver, color=colors[solver])
+axis.set_xscale("log")
+axis.set_yscale("log")
+axis.set_xlabel("matrix nonzeros [log]")
+axis.set_ylabel("solve time [s, log]")
+axis.set_title("Runtime as size and density increase")
+axis.grid(alpha=0.25, which="both")
+axis.legend(frameon=False)
+fig.tight_layout()
+plt.show()
 """),
     markdown(r"""
 # 3 · The same switch inside Brightway
@@ -314,7 +325,7 @@ direct = LCA(demand, method=method)
 iterative = JacobiGMRESLCA(
     demand,
     method=method,
-    rtol=1e-8,
+    rtol=1e-4,
     use_guess=True,
 )
 ```
@@ -373,6 +384,8 @@ def run_bafu_worker(solver: str, iterations: int, stochastic: bool, output: Path
         "--output", str(output),
         "--quiet",
     ]
+    if solver == "jacobi-gmres":
+        command.extend(["--rtol", str(RTOL), "--use-guess"])
     if not stochastic:
         command.append("--no-stochastic")
     run_checked(command, timeout=45)
@@ -414,13 +427,13 @@ pd.DataFrame([
 ]).style.format({"seconds": "{:.3f}", "incremental peak MiB": "{:.1f}", "score": "{:.8f}", "relative residual": "{:.2e}"})
 """),
     markdown(r"""
-# 4 · 200 paired BAFU Monte Carlo samples
+# 4 · 200 paired BAFU Monte Carlo samples at `rtol=1e-4`
 
 - Functional unit: **1 kWh Swiss low-voltage electricity at grid**.
 - Impact: **IPCC 2021 GWP100**.
 - Both solvers receive the same seed and identical sampled technosphere and biosphere matrices.
 - Each pair is accepted only if both matrix fingerprints match.
-- Jacobi+GMRES reuses the preceding supply array as its initial guess.
+- Jacobi+GMRES uses `rtol=1e-4` and `use_guess=True`, reusing the preceding supply array as its initial guess.
 """),
     code(r"""
 from dev.compare_bafu_runs import summarize
@@ -452,6 +465,7 @@ pd.DataFrame([
         "median iteration [ms]": mc_summary["direct"]["median_iteration_seconds_excluding_first"] * 1000,
         "incremental peak [MiB]": mc_summary["direct"]["incremental_peak_rss_bytes"] / 2**20,
         "median GMRES iterations": np.nan,
+        "warm start": "—",
     },
     {
         "solver": "Jacobi + GMRES",
@@ -459,6 +473,7 @@ pd.DataFrame([
         "median iteration [ms]": mc_summary["jacobi_gmres"]["median_iteration_seconds_excluding_first"] * 1000,
         "incremental peak [MiB]": mc_summary["jacobi_gmres"]["incremental_peak_rss_bytes"] / 2**20,
         "median GMRES iterations": mc_summary["jacobi_gmres"]["median_gmres_iterations"],
+        "warm start": "yes",
     },
 ]).style.format({"200 samples [s]": "{:.2f}", "median iteration [ms]": "{:.1f}", "incremental peak [MiB]": "{:.1f}", "median GMRES iterations": "{:.0f}"})
 """),
@@ -470,11 +485,11 @@ fig, axes = plt.subplots(2, 2, figsize=(10.5, 7.5))
 labels = ["UMFPACK", "Jacobi + GMRES"]
 axes[0, 0].bar(labels, [mc_summary["direct"]["calculation_seconds"], mc_summary["jacobi_gmres"]["calculation_seconds"]], color=["#DD8452", "#12A594"])
 axes[0, 0].set_ylabel("200 samples [s]")
-axes[0, 0].set_title("At 11.7k rows, direct still wins")
+axes[0, 0].set_title("Audited tolerance changes the winner")
 
 axes[0, 1].bar(labels, [mc_summary["direct"]["incremental_peak_rss_bytes"] / 2**20, mc_summary["jacobi_gmres"]["incremental_peak_rss_bytes"] / 2**20], color=["#DD8452", "#12A594"])
 axes[0, 1].set_ylabel("incremental peak RSS [MiB]")
-axes[0, 1].set_title("Iterative uses less peak memory")
+axes[0, 1].set_title("Peak memory is similar at this scale")
 
 limits = [min(direct_scores.min(), iterative_scores.min()), max(direct_scores.max(), iterative_scores.max())]
 axes[1, 0].scatter(direct_scores, iterative_scores, s=18, alpha=0.7, color="#315B7D")
@@ -499,7 +514,7 @@ plt.show()
     markdown(r"""
 # Takeaways
 
-1. **There is no universal winner.** BAFU's 11,747-row system is still faster with UMFPACK.
+1. **Tolerance can change the winner.** At `rtol=1e-4`, warm-started Jacobi+GMRES overtakes UMFPACK on the 11,747-row BAFU system.
 2. **The crossover is structural.** As random cross-links and density generate fill-in, direct runtime and RAM rise sharply.
 3. **Approximation must be audited.** Report `rtol`, GMRES status, the measured $Ax-b$ residual, and score agreement.
 4. **Monte Carlo comparisons must be paired.** Equal seeds are not enough—verify matrix fingerprints.

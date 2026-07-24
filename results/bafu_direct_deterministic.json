@@ -41,16 +41,16 @@
     11747
   ],
   "biosphere_nnz": 248974,
-  "object_seconds": 0.04987254203297198,
-  "matrix_load_seconds": 0.060083750053308904,
-  "calculation_seconds": 0.05626412492711097,
-  "baseline_rss_bytes": 335806464,
-  "peak_rss_bytes": 360562688,
-  "incremental_peak_rss_bytes": 24756224,
+  "object_seconds": 0.04577225004322827,
+  "matrix_load_seconds": 0.05376924993470311,
+  "calculation_seconds": 0.05426283413544297,
+  "baseline_rss_bytes": 339197952,
+  "peak_rss_bytes": 358514688,
+  "incremental_peak_rss_bytes": 19316736,
   "records": [
     {
       "iteration": 0,
-      "seconds": 0.05053299991413951,
+      "seconds": 0.04841533279977739,
       "score": 0.09707145849913332,
       "relative_residual": 4.631123937847535e-16,
       "gmres_iterations": null,

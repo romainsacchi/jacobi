@@ -27,7 +27,7 @@
   "seed": 2026,
   "iterations_requested": 1,
   "use_guess": true,
-  "rtol": 1e-08,
+  "rtol": 0.0001,
   "restart": 50,
   "maxiter": 300,
   "technosphere_shape": [
@@ -41,19 +41,19 @@
     11747
   ],
   "biosphere_nnz": 248974,
-  "object_seconds": 0.050389999989420176,
-  "matrix_load_seconds": 0.05680499994195998,
-  "calculation_seconds": 0.07435508293565363,
-  "baseline_rss_bytes": 329105408,
-  "peak_rss_bytes": 335216640,
-  "incremental_peak_rss_bytes": 6111232,
+  "object_seconds": 0.04564300016500056,
+  "matrix_load_seconds": 0.05052824993617833,
+  "calculation_seconds": 0.0389341248665005,
+  "baseline_rss_bytes": 328515584,
+  "peak_rss_bytes": 334888960,
+  "incremental_peak_rss_bytes": 6373376,
   "records": [
     {
       "iteration": 0,
-      "seconds": 0.06804312497843057,
-      "score": 0.09707145546378378,
-      "relative_residual": 9.573716598414918e-09,
-      "gmres_iterations": 40,
+      "seconds": 0.03325437498278916,
+      "score": 0.09704687745251653,
+      "relative_residual": 6.351818319700667e-05,
+      "gmres_iterations": 23,
       "gmres_info": 0,
       "technosphere_fingerprint": "3a763d83641b862ad0986331",
       "biosphere_fingerprint": "cce05fb1eee59742f2f9dc55"
