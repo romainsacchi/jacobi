@@ -185,6 +185,119 @@ BRIGHTCON_BW_PROJECT=<project-name> \
 The notebook labels sources as `LIVE`, `STORED RESULTS`, or `STORED FALLBACK (...)`. Never
 present stored results as live.
 
+## Reconstructing the live Brightway project
+
+The repository is self-contained for synthetic benchmarks and stored-result notebook rendering,
+but not for live BAFU calculations. The imported Brightway project and ecoinvent 3.10 biosphere
+are licensed/external data and must be prepared on the target computer.
+
+### Install dependencies
+
+Use Python 3.11 or newer:
+
+```bash
+uv sync
+```
+
+If `uv` is unavailable, install the dependencies listed in `pyproject.toml` into an equivalent
+environment. `scikit-umfpack` additionally requires a working SuiteSparse/UMFPACK installation
+and compiler/runtime support. A machine using Pardiso may substitute that backend, but notebook
+labels and metadata must be changed accordingly.
+
+### Create/select a project
+
+Prepare the project before starting a timed demonstration; the notebook does not import data live:
+
+```python
+import bw2data as bd
+
+PROJECT = "brightcon-2026"
+if PROJECT not in bd.projects:
+    bd.projects.create_project(PROJECT)
+bd.projects.set_current(PROJECT)
+```
+
+Any project name is acceptable if passed through `BRIGHTCON_BW_PROJECT`.
+
+### Import the licensed ecoinvent 3.10 biosphere
+
+Use the licensed ecospold2 download and keep its path outside the repository:
+
+```python
+import bw2data as bd
+import bw2io as bi
+
+bd.projects.set_current("brightcon-2026")
+source = "/path/to/licensed/ecoinvent-3.10/datasets"
+importer = bi.SingleOutputEcospold2Importer(source, "ecoinvent-3.10-cutoff")
+importer.apply_strategies()
+importer.statistics()
+importer.write_database()
+```
+
+If a compatible ecoinvent 3.10 biosphere is already present, reuse it rather than importing a
+duplicate. Record its actual database name; do not guess `biosphere3`.
+
+### Import the BAFU workbook
+
+`data/lci-bafu.xlsx` is in the generic `bw2io.ExcelImporter` format and declares the database name
+`bafu`. Match its biosphere exchanges against the actual local ecoinvent 3.10 biosphere before
+writing the database:
+
+```python
+import bw2data as bd
+import bw2io as bi
+
+bd.projects.set_current("brightcon-2026")
+importer = bi.ExcelImporter("data/lci-bafu.xlsx")
+importer.apply_strategies()
+importer.statistics()
+
+BIOSPHERE_DATABASE = "ecoinvent-3.10-biosphere"  # replace with the local name
+importer.match_database(BIOSPHERE_DATABASE, fields=["name", "categories", "unit"])
+importer.statistics()
+importer.write_database()
+```
+
+Review unmatched exchanges before `write_database()`. Resolve custom or renamed flows explicitly;
+do not silently accept unmatched biosphere exchanges. The resulting database must be named `bafu`
+unless every worker/notebook reference is changed consistently.
+
+### Validate and run
+
+Audit the workbook without importing it:
+
+```bash
+uv run python dev/audit_bafu_workbook.py data/lci-bafu.xlsx \
+  --output results/bafu_workbook_audit.json
+```
+
+Before benchmarking, confirm project and database existence, unique activity `bafu-219622`, and:
+
+```text
+name: Electricity, low voltage, at grid
+reference product: Electricity, low voltage, at grid
+location: CH
+unit: kilowatt hour
+method: ("IPCC 2021", "climate change", "global warming potential (GWP100)")
+```
+
+The notebook performs this preflight. For a standalone live 500-sample run:
+
+```bash
+BRIGHTCON_BW_PROJECT=brightcon-2026 uv run python dev/benchmark_bafu.py \
+  --solver direct --iterations 500 --output /tmp/bafu_direct_500.json
+
+BRIGHTCON_BW_PROJECT=brightcon-2026 uv run python dev/benchmark_bafu.py \
+  --solver jacobi-gmres --iterations 500 --rtol 1e-4 --use-guess \
+  --output /tmp/bafu_jacobi_500.json
+
+uv run python dev/compare_bafu_runs.py /tmp/bafu_direct_500.json \
+  /tmp/bafu_jacobi_500.json --output /tmp/bafu_pair_summary_500.json
+```
+
+Never commit ecoinvent source files, Brightway project directories, credentials, or private paths.
+
 ## Future work and publication checklist
 
 - Revisit the proposed two-dimensional synthetic size/density grid with memory guards.
