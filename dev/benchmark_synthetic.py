@@ -78,6 +78,35 @@ def constant_degree_matrix(
     return matrix
 
 
+def banded_matrix(
+    n: int,
+    half_bandwidth: int,
+    seed: int,
+    diagonal_span: float,
+    coupling: float = 0.8,
+) -> sparse.csc_matrix:
+    """Build a sparse, locally connected matrix with predictable low LU fill-in."""
+    if half_bandwidth < 1 or half_bandwidth >= n:
+        raise ValueError("half_bandwidth must be between 1 and n - 1")
+    if not 0 < coupling < 1:
+        raise ValueError("coupling must be between zero and one")
+
+    coefficient = coupling / (2 * half_bandwidth)
+    offsets = [offset for offset in range(-half_bandwidth, half_bandwidth + 1) if offset]
+    diagonals = [
+        -coefficient * np.ones(n - abs(offset), dtype=float) for offset in offsets
+    ]
+    matrix = sparse.eye(n, format="csc") + sparse.diags(
+        diagonals, offsets, shape=(n, n), format="csc"
+    )
+
+    rng = np.random.default_rng(seed)
+    row_scales = 10 ** rng.uniform(-diagonal_span / 2, diagonal_span / 2, size=n)
+    matrix = (sparse.diags(row_scales, format="csc") @ matrix).tocsc()
+    matrix.sort_indices()
+    return matrix
+
+
 def fixed_density_matrix(
     n: int,
     density: float,
@@ -127,6 +156,9 @@ def fixed_density_matrix(
             data_rvs=lambda size: rng.uniform(0.0001, 0.005, size),
         )
         off_diagonal = local + cross
+    elif family == "banded":
+        half_bandwidth = max(1, min(n - 1, round(density * n / 2)))
+        return banded_matrix(n, half_bandwidth, seed, diagonal_span)
     else:
         raise ValueError(f"Unknown matrix family: {family}")
     off_diagonal.setdiag(0.0)
@@ -160,6 +192,7 @@ def solve(
     rtol: float,
     restart: int,
     maxiter: int,
+    x0: np.ndarray | None = None,
 ) -> tuple[np.ndarray, int | None, int]:
     if solver == "numpy-dense":
         return np.linalg.solve(matrix.toarray(), demand), None, 0
@@ -192,6 +225,7 @@ def solve(
     solution, info = gmres(
         matrix,
         demand,
+        x0=x0,
         M=preconditioner,
         rtol=rtol,
         atol=0.0,
@@ -283,6 +317,10 @@ def run(args: argparse.Namespace) -> dict[str, object]:
             matrix = constant_degree_matrix(
                 args.size, args.degree, args.seed, args.diagonal_span
             )
+        elif args.topology == "banded":
+            matrix = banded_matrix(
+                args.size, args.degree, args.seed, args.diagonal_span
+            )
         else:
             matrix = fixed_density_matrix(
                 args.size,
@@ -330,12 +368,12 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     return {
         "kind": "synthetic",
         "topology": args.topology,
-        "matrix_family": args.matrix_family,
+        "matrix_family": "banded" if args.topology == "banded" else args.matrix_family,
         "blocks": args.blocks if args.matrix_family == "io-block" else None,
         "solver": args.solver,
         "size": args.size,
         "shape": [args.size, args.size],
-        "degree": args.degree if args.topology == "constant-degree" else None,
+        "degree": args.degree if args.topology in {"constant-degree", "banded"} else None,
         "target_density": args.density if args.topology == "fixed-density" else None,
         "diagonal_span_orders": args.diagonal_span,
         "nnz": int(matrix.nnz),
@@ -383,14 +421,14 @@ def main() -> None:
     )
     parser.add_argument(
         "--topology",
-        choices=("constant-degree", "fixed-density"),
+        choices=("constant-degree", "fixed-density", "banded"),
         default="constant-degree",
     )
     parser.add_argument("--size", type=int, required=True)
     parser.add_argument("--degree", type=int, default=8)
     parser.add_argument("--density", type=float, default=0.001)
     parser.add_argument(
-        "--matrix-family", choices=("lca-random", "io-block"), default="lca-random"
+        "--matrix-family", choices=("lca-random", "io-block", "banded"), default="lca-random"
     )
     parser.add_argument("--blocks", type=int, default=8)
     parser.add_argument("--rhs-count", type=int, default=1)

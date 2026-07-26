@@ -58,12 +58,13 @@ should be used for live rehearsal.
 
 The notebook proceeds top-to-bottom:
 
-1. Bare `Ax=b`: dense NumPy, SuperLU, UMFPACK, GMRES, and Jacobi+GMRES.
-2. Synthetic runtime/RSS/iteration/residual scaling at fixed connectivity.
-3. Connectivity-versus-size, guarded density, and block-structured stress cases.
-4. Fixed synthetic matrix with many right-hand sides.
-5. Synthetic changing-matrix repeated solves.
-7. Takeaways and presenter preflight.
+1. Short solver toolbox: dense NumPy, SuperLU, UMFPACK, GMRES, Jacobi+GMRES, and optional Pardiso.
+2. Synthetic runtime/RSS/iteration/residual scaling through 50,000 rows.
+3. Density-versus-size and guarded high-density stress cases, followed by a large banded
+   counterexample where UMFPACK still completes at 50,000 rows.
+4. Fixed 25,000-row banded synthetic matrix with many right-hand sides and low LU fill-in.
+5. A 500-iteration changing-matrix synthetic Monte Carlo analogue with and without warm starts.
+6. `bw2calc.JacobiGMRESLCA` usage and decision-oriented takeaways.
 
 The synthetic iterative configuration is fixed at `rtol=1e-4`, seed 2026, with paired matrices and
 demands. The BAFU Monte Carlo configuration remains available in the worker scripts as optional
@@ -89,11 +90,11 @@ Add an estimated-nnz/memory guard and label cells `SKIPPED`, `TIMEOUT`, or compl
 
 The live notebook now separates two effects:
 
-- fixed-connectivity scaling at 5 and 25 inputs per activity, across 1,000, 5,000, and 10,000
-  rows;
-- a large fixed-connectivity extension at 50,000, 100,000, and 300,000 rows, using only UMFPACK,
-  GMRES, and Jacobi + GMRES with isolated 120-second workers and a 15-minute suite budget;
-- a fixed-density grid at 0.1%, 0.3%, 1%, 3%, 5%, 10%, and 15% for bounded matrix sizes.
+- density-versus-size scaling at 0.1%, 0.3%, 0.5%, 1%, 2%, 5%, and 10%, across 1,000, 2,500, 5,000,
+  7,500, and 10,000 rows;
+- a large banded extension at 50,000, 100,000, 200,000, and 300,000 rows, using UMFPACK,
+  optional Pardiso, and Jacobi + GMRES with isolated 120-second workers and a 15-minute suite budget;
+- a fixed-density grid at 0.1%, 0.3%, 0.5%, 1%, 2%, 3%, 5%, 7.5%, 10%, and 15% for bounded matrix sizes.
 
 The density grid is run in isolated workers with a machine-aware estimated construction-memory cap
 equal to 25% of currently available RAM, bounded between 512 MiB and 8 GiB. Each worker has a
@@ -103,9 +104,9 @@ construction. A 20,000 × 20,000 matrix at 15% density would contain roughly 60 
 before sparse construction and LU fill-in overhead, so completion still depends on actual memory
 and fill-in behavior.
 
-The notebook also runs a small `io-block` family at 1%, 5%, and 15% density. Density is not a
-complete structural descriptor: block structure, diagonal dominance, coefficient scaling, and LU
-fill-in can change solver behavior at the same nominal density.
+The earlier block-structure plot was removed because it did not materially separate the solver
+results. A clearer banded counterexample now demonstrates the structural point: low-fill matrices
+can remain favorable to UMFPACK even at large sizes.
 
 Synthetic records include matrix construction time, estimated and actual storage, peak RSS, solver
 time, factorization time, repeated-RHS time, LU fill ratio when available, iterations, residual,

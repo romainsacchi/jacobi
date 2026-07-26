@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import ast
 
 import nbformat as nbf
 
@@ -18,7 +19,110 @@ def code(source: str):
     return nbf.v4.new_code_cell(source.strip() + "\n")
 
 
+def hidden_code(source: str):
+    cell = code(source)
+    cell.metadata["jupyter"] = {"source_hidden": True}
+    cell.metadata["tags"] = ["hide-input"]
+    return cell
+
+
+embedded_worker_code = Path(__file__).with_name("benchmark_synthetic.py").read_text()
+# The notebook needs the worker's reusable functions, not its command-line entry point.
+_tree = ast.parse(embedded_worker_code)
+_wanted = {"constant_degree_matrix", "banded_matrix", "solve"}
+_parts = [
+    {
+        "constant_degree_matrix": """# Build a matrix with a fixed number of links per activity.
+""",
+        "banded_matrix": """# Build a locally connected matrix with low direct-solver fill-in.
+""",
+        "solve": """# Solve with a direct method or with GMRES, optionally scaled by the diagonal.
+""",
+    }.get(node.name, "") + ast.get_source_segment(embedded_worker_code, node)
+    for node in _tree.body
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name in _wanted
+]
+embedded_benchmark_code = """# Notebook helpers
+# ----------------
+# These two functions create a sparse technosphere-like matrix and solve Ax = b.
+# The benchmark cells below use them directly; the larger worker code is kept private.
+
+import time
+from pathlib import Path
+import numpy as np
+from scipy import sparse
+from scipy.sparse.linalg import LinearOperator, gmres, spsolve
+""" + "\n\n".join(_parts) + "\n"
+embedded_suite_code = Path(__file__).with_name("run_synthetic_suite.py").read_text()
+embedded_suite_code = embedded_suite_code.replace('Path("dev/benchmark_synthetic.py")', 'Path("benchmark_synthetic.py")')
+
 cells = [
+    hidden_code(embedded_benchmark_code + "\n" + """
+import tempfile
+import json
+import subprocess
+import sys
+
+_embedded_dir = Path(tempfile.mkdtemp(prefix="jacobi_notebook_"))
+_embedded_worker = _embedded_dir / "benchmark_synthetic.py"
+_embedded_suite = _embedded_dir / "run_synthetic_suite.py"
+_embedded_worker.write_text(EMBEDDED_WORKER_SOURCE)
+_embedded_suite.write_text(EMBEDDED_SUITE_SOURCE)
+
+
+def run_benchmark(
+    name,
+    *,
+    sizes,
+    solvers,
+    topology="constant-degree",
+    degree=8,
+    degrees=None,
+    densities=None,
+    rhs_counts=None,
+    matrix_family="lca-random",
+    blocks=8,
+    rtol=1e-4,
+    worker_timeout=None,
+    total_budget=None,
+    memory_guard_mib=None,
+    suite_timeout=None,
+):
+    # Run an isolated benchmark grid and return its records.
+    output = _embedded_dir / f"{name}.json"
+    command = [
+        sys.executable,
+        str(_embedded_suite),
+        "--python", sys.executable,
+        "--worker", str(_embedded_worker),
+        "--output", str(output),
+        "--sizes", *map(str, sizes),
+        "--solvers", *solvers,
+        "--topology", topology,
+        "--degree", str(degree),
+        "--matrix-family", matrix_family,
+        "--blocks", str(blocks),
+        "--rtol", str(rtol),
+    ]
+    optional_lists = {
+        "--degrees": degrees,
+        "--densities": densities,
+        "--rhs-counts": rhs_counts,
+    }
+    for flag, values in optional_lists.items():
+        if values:
+            command.extend([flag, *map(str, values)])
+    optional_values = {
+        "--run-timeout": worker_timeout,
+        "--total-budget": total_budget,
+        "--max-estimated-construction-mib": memory_guard_mib,
+    }
+    for flag, value in optional_values.items():
+        if value is not None:
+            command.extend([flag, str(value)])
+    subprocess.run(command, check=True, capture_output=True, text=True, timeout=suite_timeout)
+    return json.loads(output.read_text())
+""".replace("EMBEDDED_WORKER_SOURCE", repr(embedded_worker_code)).replace("EMBEDDED_SUITE_SOURCE", repr(embedded_suite_code))),
     markdown(r"""
 # From 8 minutes to 4 seconds
 ## Solving large systems with Jacobi + GMRES
@@ -31,14 +135,14 @@ Open Tools and Development · Aalborg University & online
     markdown(r"""
 ## Run of show
 
-1. Start with bare synthetic technosphere matrices and solve $Ax=b$ five ways.
-2. Scale the same matrix family while measuring runtime, peak RSS, iterations, and residuals.
-3. Reuse one fixed synthetic matrix across many right-hand sides.
-4. Rebuild paired synthetic matrices across repeated samples.
+1. Show how size and density create direct-solver fill-in.
+2. Use a large banded counterexample to show that size alone is not decisive.
+3. Reuse one fixed matrix and watch factorization reuse reverse the winner.
+4. Rebuild paired matrices across 500 Monte Carlo iterations, with and without warm starts.
+5. Translate the evidence back to `bw2calc`.
 
-Synthetic workers run in isolated subprocesses with explicit timeouts and a pre-construction memory
-guard. Unsafe cells are labeled `SKIPPED`; failed or timed-out cells are preserved as diagnostics,
-and only an unavailable live suite falls back to committed calibration results.
+Every benchmark runs live in an isolated worker. Unsafe cases are marked **SKIPPED**, and failures
+or timeouts remain visible instead of silently disappearing.
 """),
     code(r"""
 from __future__ import annotations
@@ -52,6 +156,7 @@ from pathlib import Path
 from time import perf_counter
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
 import numpy as np
 import pandas as pd
 import psutil
@@ -60,35 +165,46 @@ from IPython.display import Markdown, display
 from scipy.sparse.linalg import LinearOperator, gmres, spsolve
 
 
-def find_repo_root(start: Path = Path.cwd()) -> Path:
-    for candidate in (start, *start.parents):
-        if (candidate / "dev" / "benchmark_synthetic.py").exists():
-            return candidate
-    raise FileNotFoundError("Run this notebook from inside the repository")
+ROOT = Path.cwd()
+(ROOT / "results").mkdir(exist_ok=True)
 
-
-ROOT = find_repo_root()
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-LIVE = os.environ.get("BRIGHTCON_LIVE", "1") != "0"
-BW_PROJECT = os.environ.get("BRIGHTCON_BW_PROJECT", "brightcon-2026")
-DATABASE = "bafu"
-ACTIVITY_CODE = "bafu-219622"
-METHOD = ("IPCC 2021", "climate change", "global warming potential (GWP100)")
 SEED = 2026
 RTOL = 1e-4
+available_mib = psutil.virtual_memory().available / 2**20
+memory_guard_mib = int(min(8_192, max(512, available_mib * 0.25)))
 try:
     import pypardiso  # noqa: F401
     PARDISO_AVAILABLE = True
 except ImportError:
     PARDISO_AVAILABLE = False
 DIRECT_SOLVERS = ["umfpack"] + (["pardiso"] if PARDISO_AVAILABLE else [])
+colors = {
+    "numpy-dense": "#7F8C8D", "superlu": "#C44E52", "umfpack": "#DD8452",
+    "pardiso": "#937860", "gmres": "#4C72B0", "jacobi-gmres": "#12A594",
+    "jacobi-gmres-no-guess": "#8172B2",
+}
+solver_names = {
+    "numpy-dense": "NumPy dense",
+    "superlu": "SuperLU",
+    "umfpack": "UMFPACK",
+    "pardiso": "Pardiso",
+    "gmres": "GMRES",
+    "jacobi-gmres": "Jacobi + GMRES",
+    "jacobi-gmres-no-guess": "Jacobi + GMRES (no warm start)",
+}
+
+plt.style.use("seaborn-v0_8-whitegrid")
+plt.rcParams.update({
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+    "axes.titleweight": "bold",
+    "figure.dpi": 120,
+})
+
 
 {
-    "live workers": LIVE,
+    "benchmark mode": "live, self-contained notebook",
     "worker Python": sys.executable,
-    "Brightway project": BW_PROJECT,
     "NumPy": np.__version__,
     "SciPy": scipy.__version__,
     "scikit-umfpack": importlib.metadata.version("scikit-umfpack"),
@@ -101,37 +217,31 @@ DIRECT_SOLVERS = ["umfpack"] + (["pardiso"] if PARDISO_AVAILABLE else [])
 - $b$: demand vector—one unit of the functional unit.
 - $x$: supply array—how much each activity must produce.
 
-The first matrix is deliberately ill-scaled across four orders of magnitude. This makes the purpose of diagonal preconditioning visible without any biosphere or characterization matrices.
+The first matrix is deliberately ill-scaled. This makes the benefit of simple diagonal scaling visible without adding other LCA matrices.
 """),
     code(r"""
-from dev.benchmark_synthetic import constant_degree_matrix
-
 A_tiny = constant_degree_matrix(n=12, degree=2, seed=SEED, diagonal_span=4.0)
 b_tiny = np.zeros(12)
 b_tiny[0] = 1.0
 
-fig, axes = plt.subplots(1, 2, figsize=(9, 3.4))
-axes[0].spy(A_tiny, markersize=7, color="#315B7D")
-axes[0].set_title(f"Sparse structure: {A_tiny.nnz} nonzeros")
-axes[0].set_xlabel("activity")
-axes[0].set_ylabel("product")
-axes[1].bar(np.arange(12), np.abs(A_tiny.diagonal()), color="#12A594")
-axes[1].set_yscale("log")
-axes[1].set_title("Production diagonal")
-axes[1].set_xlabel("activity")
-axes[1].set_ylabel("absolute value, log scale")
+fig, axis = plt.subplots(figsize=(5, 4))
+axis.spy(A_tiny, markersize=7, color="#315B7D")
+axis.set_title(f"Sparse technosphere structure ({A_tiny.nnz} nonzeros)")
+axis.set_xlabel("activity"); axis.set_ylabel("product")
 fig.tight_layout()
 plt.show()
 """),
     markdown(r"""
-## Five approaches, one solution
+## Five approaches, one answer
 
-- Dense LAPACK through `numpy.linalg.solve`—useful only while $A$ is small.
-- Sparse SuperLU, UMFPACK, and optionally Pardiso—robust direct factorisations.
-- GMRES—approximate Krylov solve with an explicit residual tolerance.
-- Jacobi + GMRES—left-precondition with $D^{-1}$, the reciprocal diagonal.
+- **NumPy dense** stores and solves the complete matrix, including all its zeros.
+- **SuperLU** is SciPy's general sparse direct solver.
+- **UMFPACK** is a sparse direct solver designed to limit unnecessary work and memory.
+- **GMRES** approaches the answer iteratively, stopping when the requested tolerance is reached.
+- **Jacobi + GMRES** first rescales the equations using the matrix diagonal, which can help GMRES converge faster.
+- **Pardiso**, when installed, appears as another high-performance sparse direct solver.
 
-The entire Jacobi preconditioner is the `LinearOperator` below; no dense inverse is created.
+Runtime is only half the story: the residual confirms that each result satisfies $Ax=b$.
 """),
     code(r"""
 def timed(function):
@@ -182,20 +292,28 @@ for label, function in tiny_solver_runs:
         {"solver": label, "seconds": seconds, "iterations": iterations, "residual": residual, "info": info}
     )
 
-pd.DataFrame(tiny_runs).style.format({"seconds": "{:.2e}", "residual": "{:.2e}"})
-"""),
-    markdown(r"""
-### Audience prompt
+tiny_frame = pd.DataFrame(tiny_runs)
+label_colors = {
+    "NumPy dense": colors["numpy-dense"],
+    "SuperLU": colors["superlu"],
+    "UMFPACK": colors["umfpack"],
+    "Pardiso": colors["pardiso"],
+    "GMRES": colors["gmres"],
+    "Jacobi + GMRES": colors["jacobi-gmres"],
+}
+bar_colors = [label_colors[name] for name in tiny_frame["solver"]]
 
-What happens to the benefit of Jacobi if every production diagonal is already one? The answer cell repeats the comparison on a unit-scaled matrix.
-"""),
-    code(r"""
-A_unit = constant_degree_matrix(n=500, degree=8, seed=SEED, diagonal_span=0.0)
-b_unit = np.zeros(500)
-b_unit[0] = 1.0
-_, _, plain_iterations = krylov(A_unit, b_unit, jacobi=False)
-_, _, jacobi_iterations = krylov(A_unit, b_unit, jacobi=True)
-{"plain GMRES iterations": plain_iterations, "Jacobi + GMRES iterations": jacobi_iterations}
+fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+axes[0].bar(tiny_frame["solver"], tiny_frame["seconds"], color=bar_colors)
+axes[1].bar(tiny_frame["solver"], tiny_frame["residual"], color=bar_colors)
+axes[0].set_yscale("log"); axes[0].set_ylabel("runtime [s]")
+axes[1].set_yscale("log"); axes[1].set_ylabel(r"relative residual $||Ax-b||/||b||$")
+axes[0].set_title("Runtime on a tiny system")
+axes[1].set_title("All methods satisfy the equation")
+for axis in axes:
+    axis.tick_params(axis="x", rotation=30)
+    axis.grid(axis="y", alpha=0.25, which="both")
+fig.tight_layout(); plt.show()
 """),
     markdown(r"""
 # 2 · Scale the matrix, isolate every solver
@@ -205,42 +323,17 @@ Each solver runs in a fresh subprocess. This prevents one factorisation from con
 Main series: approximately eight inputs per activity. Dense solving stops at 2,500 activities; the remaining isolated workers run to completion without a benchmark timeout.
 """),
     code(r"""
-def run_checked(command: list[str], timeout: float | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        command,
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-    )
-
-
-def live_or_stored_synthetic():
-    live_path = ROOT / "results" / "live_synthetic.json"
-    fallback = ROOT / "results" / "synthetic_calibration.json"
-    if LIVE:
-        command = [
-            sys.executable,
-            "dev/run_synthetic_suite.py",
-            "--python", sys.executable,
-            "--output", str(live_path),
-            "--sizes", "500", "1000", "2500", "5000", "10000",
-            "--rtol", str(RTOL),
-        ]
-        try:
-            run_checked(command)
-            return json.loads(live_path.read_text()), "LIVE"
-        except Exception as error:
-            return json.loads(fallback.read_text()), f"STORED FALLBACK ({type(error).__name__})"
-    return json.loads(fallback.read_text()), "STORED RESULTS"
-
-
-synthetic_payload, synthetic_source = live_or_stored_synthetic()
-display(Markdown(f"**Result source: {synthetic_source}**"))
+synthetic_payload = run_benchmark(
+    "scaling",
+    sizes=[500, 1_000, 2_500, 5_000, 7_500, 10_000, 20_000, 50_000],
+    solvers=["numpy-dense", "superlu", *DIRECT_SOLVERS, "gmres", "jacobi-gmres"],
+    rtol=RTOL,
+    worker_timeout=120,
+    total_budget=850,
+    suite_timeout=900,
+)
 synthetic = pd.json_normalize(synthetic_payload["results"])
 synthetic["memory_mib"] = synthetic["incremental_peak_rss_bytes"] / 2**20
-synthetic[["solver", "size", "solve_seconds", "memory_mib", "iterations", "relative_residual", "timed_out"]]
 """),
     code(r"""
 solver_order = ["numpy-dense", "superlu", *DIRECT_SOLVERS, "gmres", "jacobi-gmres"]
@@ -259,135 +352,146 @@ for solver in solver_order:
     subset = valid[valid.solver == solver].sort_values("size")
     if subset.empty:
         continue
-    axes[0].plot(subset["size"], subset["solve_seconds"], "o-", label=solver, color=colors[solver])
-    axes[1].plot(subset["size"], subset["memory_mib"], "o-", label=solver, color=colors[solver])
+    label = solver_names[solver]
+    axes[0].plot(subset["size"], subset["solve_seconds"], "o-", label=label, color=colors[solver])
+    axes[1].plot(subset["size"], subset["memory_mib"], "o-", label=label, color=colors[solver])
 
 axes[0].set_yscale("log")
-axes[0].set_ylabel("solve time [s, log]")
+axes[0].set_ylabel("solve time [s]")
 axes[1].set_yscale("log")
-axes[1].set_ylabel("incremental peak RSS [MiB, log]")
+axes[1].set_ylabel("additional peak memory [MiB]")
 for axis in axes:
     axis.set_xlabel("matrix rows / columns")
     axis.grid(alpha=0.25, which="both")
-axes[0].set_title("Factorisation time separates")
-axes[1].set_title("Fill-in dominates memory")
-axes[0].legend(frameon=False, ncol=2, fontsize=8)
-fig.tight_layout()
+axes[0].set_title("Runtime separates as the system grows")
+axes[1].set_title("Direct factorization can increase memory")
+handles, labels = axes[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False, fontsize=8)
+fig.tight_layout(rect=[0, 0.12, 1, 1])
 plt.show()
 """),
     markdown(r"""
-### Connectivity versus size
+### Density versus size
 
-The first scaling curve keeps roughly eight inputs per activity. This additional sweep holds the
-number of inputs per activity at 5 or 25 while changing matrix size. It separates the effect of
-database size from the effect of denser connectivity.
+**Matrix density** is the share of matrix entries that are nonzero. This sweep varies both system
+size and density from 0.1% to 10%. The later stress test extends the same comparison to 15% and
+shows which combinations exceed the memory guard.
+
+Each heatmap cell answers one question:
+**how many times faster is one solver than the other?**
 """),
     code(r"""
-def live_or_stored_connectivity():
-    live_path = ROOT / "results" / "live_connectivity.json"
-    fallback = ROOT / "results" / "synthetic_connectivity_calibration.json"
-    if LIVE:
-        command = [
-            sys.executable, "dev/run_synthetic_suite.py", "--python", sys.executable,
-            "--output", str(live_path), "--sizes", "1000", "5000", "10000",
-            "--solvers", *DIRECT_SOLVERS, "jacobi-gmres", "--topology", "constant-degree",
-            "--degrees", "5", "25", "--rtol", str(RTOL), "--run-timeout", "60",
-        ]
-        try:
-            run_checked(command)
-            return json.loads(live_path.read_text()), "LIVE"
-        except Exception as error:
-            return json.loads(fallback.read_text()), f"STORED FALLBACK ({type(error).__name__})"
-    return json.loads(fallback.read_text()), "STORED RESULTS"
-
-
-connectivity_payload, connectivity_source = live_or_stored_connectivity()
-display(Markdown(f"**Result source: {connectivity_source}**"))
-connectivity = pd.json_normalize(connectivity_payload["results"])
-connectivity["memory_mib"] = connectivity["incremental_peak_rss_bytes"] / 2**20
-connectivity["speedup_vs_umfpack"] = np.nan
-for (size, degree), subset in connectivity.groupby(["size", "degree"]):
+density_size_payload = run_benchmark(
+    "density versus size",
+    sizes=[1_000, 2_500, 5_000, 7_500, 10_000],
+    solvers=[*DIRECT_SOLVERS, "jacobi-gmres"],
+    topology="fixed-density",
+    densities=[0.001, 0.003, 0.005, 0.01, 0.02, 0.05, 0.1],
+    rtol=RTOL,
+    worker_timeout=90,
+    total_budget=850,
+    memory_guard_mib=memory_guard_mib,
+    suite_timeout=900,
+)
+density_size = pd.json_normalize(density_size_payload["results"])
+density_size["speedup"] = np.nan
+for (size, density), subset in density_size.groupby(["size", "target_density"]):
     direct = subset.loc[subset.solver == "umfpack", "solve_seconds"]
-    if len(direct) == 1:
-        connectivity.loc[subset.index, "speedup_vs_umfpack"] = direct.iloc[0] / subset["solve_seconds"]
-display(connectivity[["solver", "size", "degree", "solve_seconds", "memory_mib", "speedup_vs_umfpack", "status"]])
+    iterative = subset.loc[subset.solver == "jacobi-gmres", "solve_seconds"]
+    if len(direct) == len(iterative) == 1:
+        density_size.loc[subset.index, "speedup"] = direct.iloc[0] / iterative.iloc[0]
+
+heat = density_size[density_size.solver == "jacobi-gmres"].pivot(
+    index="target_density", columns="size", values="speedup"
+)
+fig, axis = plt.subplots(figsize=(8.5, 4.5))
+image = axis.imshow(
+    np.log10(heat), aspect="auto", origin="lower",
+    cmap="PiYG", vmin=-2, vmax=2,
+)
+axis.set_xticks(range(len(heat.columns)), [f"{n:,}" for n in heat.columns])
+axis.set_yticks(range(len(heat.index)), [f"{density:.1%}" for density in heat.index])
+axis.set_xlabel("matrix size"); axis.set_ylabel("matrix density")
+axis.set_title("UMFPACK time ÷ Jacobi + GMRES time (>1× favors Jacobi)")
+for row, density in enumerate(heat.index):
+    for column, size in enumerate(heat.columns):
+        value = heat.loc[density, size]
+        if np.isfinite(value):
+            label = f"{value:.0f}×" if value >= 1 else "<1×"
+            axis.text(
+                column, row, label,
+                ha="center", va="center", fontsize=8,
+                color="white", fontweight="bold",
+            )
+bar = fig.colorbar(image, ax=axis, label="time ratio (log colour scale)")
+bar.set_ticks([-2, -1, 0, 1, 2]); bar.set_ticklabels(["0.01×", "0.1×", "1×", "10×", "100×"])
+fig.tight_layout(); plt.show()
 """),
     markdown(r"""
 ### Large synthetic systems
 
-The same fixed-connectivity construction is also attempted at 50,000, 100,000, and 300,000 rows.
-Dense and SuperLU are omitted at these sizes; UMFPACK, GMRES, and Jacobi + GMRES run in isolated
-workers with explicit status, timeout, and total-budget fields.
+Large size alone does not guarantee that an iterative solver wins. These banded matrices keep LU
+fill-in low while scaling from 50,000 to 300,000 rows. This provides a completed 50,000-row UMFPACK
+reference and acts as a counterexample to the random high-fill matrices above.
 """),
     code(r"""
-def live_or_stored_large_scaling():
-    live_path = ROOT / "results" / "live_synthetic_large.json"
-    fallback = ROOT / "results" / "synthetic_large_calibration.json"
-    if LIVE:
-        available_mib = psutil.virtual_memory().available / 2**20
-        construction_guard_mib = int(min(8192, max(512, available_mib * 0.25)))
-        command = [
-            sys.executable, "dev/run_synthetic_suite.py", "--python", sys.executable,
-            "--output", str(live_path), "--sizes", "50000", "100000", "300000",
-            "--solvers", *DIRECT_SOLVERS, "gmres", "jacobi-gmres",
-            "--topology", "constant-degree", "--degree", "8", "--rtol", str(RTOL),
-            "--run-timeout", "120", "--total-budget", "900",
-            "--max-estimated-construction-mib", str(construction_guard_mib),
-        ]
-        try:
-            run_checked(command, timeout=960)
-            return json.loads(live_path.read_text()), "LIVE"
-        except Exception as error:
-            return json.loads(fallback.read_text()), f"STORED FALLBACK ({type(error).__name__})"
-    return json.loads(fallback.read_text()), "STORED RESULTS"
-
-
-large_payload, large_source = live_or_stored_large_scaling()
-display(Markdown(f"**Result source: {large_source}**"))
+large_payload = run_benchmark(
+    "large systems",
+    sizes=[50_000, 100_000, 200_000, 300_000],
+    solvers=[*DIRECT_SOLVERS, "jacobi-gmres"],
+    topology="banded",
+    degree=8,
+    rtol=RTOL,
+    worker_timeout=120,
+    total_budget=900,
+    memory_guard_mib=memory_guard_mib,
+    suite_timeout=960,
+)
 large_results = pd.json_normalize(large_payload["results"])
 large_results["memory_mib"] = large_results["incremental_peak_rss_bytes"] / 2**20
-display(large_results[["solver", "size", "degree", "nnz", "status", "worker_wall_seconds", "solve_seconds", "memory_mib", "iterations", "relative_residual"]])
+completed_large = large_results[large_results.status == "COMPLETED"]
+fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+for solver, subset in completed_large.groupby("solver"):
+    subset = subset.sort_values("size")
+    label = solver_names[solver]
+    axes[0].plot(subset["size"], subset["solve_seconds"], "o-", label=label, color=colors[solver])
+    axes[1].plot(subset["size"], subset["memory_mib"], "o-", label=label, color=colors[solver])
+for axis in axes:
+    axis.set_xlabel("matrix size"); axis.grid(alpha=0.25)
+    axis.ticklabel_format(style="plain", axis="both")
+axes[0].set_ylabel("solve time [s]"); axes[1].set_ylabel("additional peak memory [MiB]")
+axes[0].set_title("Which solvers still finish?"); axes[1].set_title("What does completion cost in memory?")
+handles, labels = axes[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False)
+fig.tight_layout(rect=[0, 0.1, 1, 1]); plt.show()
+
+not_completed = large_results[large_results.status != "COMPLETED"]
+if not not_completed.empty:
+    display(not_completed[["solver", "size", "status"]].style.hide(axis="index"))
 """),
     markdown(r"""
 ## Guarded size–density stress test
 
-With constant density, nonzeros grow with $n^2$, not $n$. The guarded grid below adds 0.3%, 1%,
-3%, 5%, 10%, and 15% density to the original 0.1% case. High-density cases are intentionally
-limited to smaller matrices: the pre-construction guard labels unsafe cases `SKIPPED` instead of
-allocating them. The `io-block` family is also included to show that density alone does not capture
-input-output structure.
+With constant density, nonzeros grow with $n^2$, not $n$. The grid now includes intermediate
+densities so the crossover is visible rather than implied by two distant points. A memory guard
+marks unsafe combinations **SKIPPED** before allocating them.
 """),
     code(r"""
-def live_or_stored_density_grid():
-    live_path = ROOT / "results" / "live_density_grid.json"
-    fallback = ROOT / "results" / "synthetic_density_grid_calibration.json"
-    if LIVE:
-        available_mib = psutil.virtual_memory().available / 2**20
-        construction_guard_mib = int(min(8192, max(512, available_mib * 0.25)))
-        command = [
-            sys.executable, "dev/run_synthetic_suite.py", "--python", sys.executable,
-            "--output", str(live_path), "--sizes", "1000", "2500", "5000", "10000", "20000",
-            "--solvers", *DIRECT_SOLVERS, "gmres", "jacobi-gmres",
-            "--topology", "fixed-density", "--densities",
-            "0.001", "0.003", "0.01", "0.03", "0.05", "0.1", "0.15",
-            "--matrix-family", "lca-random", "--rtol", str(RTOL),
-            "--run-timeout", "90", "--total-budget", "900", "--max-estimated-construction-mib", str(construction_guard_mib),
-            "--construction-memory-multiplier", "3",
-        ]
-        try:
-            run_checked(command, timeout=600)
-            return json.loads(live_path.read_text()), "LIVE"
-        except Exception as error:
-            return json.loads(fallback.read_text()), f"STORED FALLBACK ({type(error).__name__})"
-    return json.loads(fallback.read_text()), "STORED RESULTS"
-
-
-density_payload, density_source = live_or_stored_density_grid()
-display(Markdown(f"**Result source: {density_source}**"))
+density_payload = run_benchmark(
+    "density grid",
+    sizes=[1_000, 2_500, 5_000, 10_000, 20_000],
+    solvers=[*DIRECT_SOLVERS, "jacobi-gmres"],
+    topology="fixed-density",
+    densities=[0.001, 0.003, 0.005, 0.01, 0.02, 0.03, 0.05, 0.075, 0.1, 0.15],
+    rtol=RTOL,
+    worker_timeout=90,
+    total_budget=900,
+    memory_guard_mib=memory_guard_mib,
+    suite_timeout=960,
+)
 density_results = pd.json_normalize(density_payload["results"])
 density_results["incremental_peak_MiB"] = density_results["incremental_peak_rss_bytes"] / 2**20
 density_results["runtime_status"] = density_results.get("status", "COMPLETED")
-display(density_results[["solver", "size", "target_density", "nnz", "runtime_status", "solve_seconds", "incremental_peak_MiB", "iterations", "relative_residual"]])
 
 completed = density_results[density_results.runtime_status == "COMPLETED"].copy()
 completed["log10_speedup_umfpack_over_jacobi"] = np.nan
@@ -399,15 +503,18 @@ for (size, density), subset in completed.groupby(["size", "target_density"]):
         completed.loc[subset.index, "log10_speedup_umfpack_over_jacobi"] = value
 
 fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
-for solver, subset in completed.groupby("solver"):
-    axes[0].scatter(subset["density"], subset["solve_seconds"], label=solver, color=colors[solver], alpha=0.8)
-    axes[0].plot(subset["density"], subset["solve_seconds"], color=colors[solver], alpha=0.35)
-axes[0].set_xscale("log")
-axes[0].set_yscale("log")
-axes[0].set_xlabel("realized density [log]")
-axes[0].set_ylabel("solve time [s, log]")
-axes[0].set_title("Runtime versus density")
+density_coverage = completed.groupby("size")["target_density"].nunique()
+plot_size = density_coverage.idxmax()
+runtime_slice = completed[completed["size"] == plot_size]
+for solver, subset in runtime_slice.groupby("solver"):
+    subset = subset.sort_values("density")
+    axes[0].plot(subset["density"], subset["solve_seconds"], "o-", label=solver_names[solver], color=colors[solver])
+axes[0].set_xlabel("realized matrix density")
+axes[0].set_ylabel("solve time [s]")
+axes[0].xaxis.set_major_formatter(PercentFormatter(1.0))
+axes[0].set_title(f"Density effect at n = {plot_size:,}")
 axes[0].grid(alpha=0.25, which="both")
+axes[0].legend(frameon=False, fontsize=8)
 
 pivot = completed[completed.solver == "jacobi-gmres"].pivot_table(index="size", columns="target_density", values="log10_speedup_umfpack_over_jacobi")
 image = axes[1].imshow(pivot, aspect="auto", cmap="PiYG", vmin=-2, vmax=2)
@@ -415,46 +522,75 @@ axes[1].set_xticks(range(len(pivot.columns)), [f"{value:.1%}" for value in pivot
 axes[1].set_yticks(range(len(pivot.index)), pivot.index)
 axes[1].set_xlabel("target density")
 axes[1].set_ylabel("matrix size")
-axes[1].set_title("log₁₀(UMFPACK / Jacobi time)")
-fig.colorbar(image, ax=axes[1], label="positive = Jacobi faster")
+axes[1].set_title("Where does Jacobi + GMRES become faster? (>1×)")
+for row, size in enumerate(pivot.index):
+    for column, density in enumerate(pivot.columns):
+        value = pivot.loc[size, density]
+        if np.isfinite(value):
+            ratio = 10 ** value
+            label = f"{ratio:.0f}×" if ratio >= 1 else "<1×"
+            axes[1].text(
+                column, row, label,
+                ha="center", va="center", fontsize=7,
+                color="white", fontweight="bold",
+            )
+bar = fig.colorbar(image, ax=axes[1], label="UMFPACK time ÷ Jacobi time")
+bar.set_ticks([-2, -1, 0, 1, 2]); bar.set_ticklabels(["0.01×", "0.1×", "1×", "10×", "100×"])
 fig.tight_layout()
 plt.show()
 """),
     markdown(r"""
 ### Matrix structure sensitivity
 
-At the same nominal densities, block-structured input-output matrices can behave differently from
-uniform random cross-links. This small companion sweep keeps the high-density cases bounded while
-showing that density is a proxy for structure, not a complete explanation.
+Two matrices can have the same size and density but very different patterns. This comparison asks
+whether block structure changes the UMFPACK/Jacobi crossover.
 """),
     code(r"""
-def live_or_stored_io_block():
-    live_path = ROOT / "results" / "live_density_ioblock.json"
-    fallback = ROOT / "results" / "synthetic_density_ioblock_calibration.json"
-    if LIVE:
-        available_mib = psutil.virtual_memory().available / 2**20
-        construction_guard_mib = int(min(8192, max(512, available_mib * 0.25)))
-        command = [
-            sys.executable, "dev/run_synthetic_suite.py", "--python", sys.executable,
-            "--output", str(live_path), "--sizes", "1000", "2500", "5000", "10000",
-            "--solvers", *DIRECT_SOLVERS, "jacobi-gmres", "--topology", "fixed-density",
-            "--densities", "0.01", "0.05", "0.15", "--matrix-family", "io-block",
-            "--blocks", "8", "--rtol", str(RTOL), "--run-timeout", "90", "--total-budget", "600",
-            "--max-estimated-construction-mib", str(construction_guard_mib),
-        ]
-        try:
-            run_checked(command, timeout=300)
-            return json.loads(live_path.read_text()), "LIVE"
-        except Exception as error:
-            return json.loads(fallback.read_text()), f"STORED FALLBACK ({type(error).__name__})"
-    return json.loads(fallback.read_text()), "STORED RESULTS"
-
-
-ioblock_payload, ioblock_source = live_or_stored_io_block()
-display(Markdown(f"**Result source: {ioblock_source}**"))
+ioblock_payload = run_benchmark(
+    "block structure",
+    sizes=[1_000, 2_500, 5_000, 7_500, 10_000],
+    solvers=[*DIRECT_SOLVERS, "jacobi-gmres"],
+    topology="fixed-density",
+    densities=[0.01, 0.03, 0.05, 0.1, 0.15],
+    matrix_family="io-block",
+    blocks=8,
+    rtol=RTOL,
+    worker_timeout=90,
+    total_budget=600,
+    memory_guard_mib=memory_guard_mib,
+    suite_timeout=660,
+)
 ioblock = pd.json_normalize(ioblock_payload["results"])
-ioblock["memory_mib"] = ioblock["incremental_peak_rss_bytes"] / 2**20
-display(ioblock[["solver", "size", "target_density", "nnz", "solve_seconds", "memory_mib", "iterations", "status"]])
+ioblock = ioblock[ioblock.status == "COMPLETED"].copy()
+ioblock["family"] = "block structured"
+
+random_structure = completed[
+    completed["target_density"].isin([0.01, 0.03, 0.05, 0.1, 0.15])
+    & completed["size"].isin([1000, 2500, 5000, 7500, 10000])
+].copy()
+random_structure["family"] = "random links"
+plot_data = pd.concat([random_structure, ioblock], ignore_index=True)
+
+ratios = []
+for (family, size, density), subset in plot_data.groupby(["family", "size", "target_density"]):
+    direct = subset.loc[subset.solver == "umfpack", "solve_seconds"]
+    iterative = subset.loc[subset.solver == "jacobi-gmres", "solve_seconds"]
+    if len(direct) == len(iterative) == 1:
+        ratios.append({"family": family, "size": size, "density": density, "speedup": direct.iloc[0] / iterative.iloc[0]})
+
+structure_ratio = pd.DataFrame(ratios)
+fig, axis = plt.subplots(figsize=(8, 4))
+family_colors = {"random links": "#4C72B0", "block structured": "#12A594"}
+for family, subset in structure_ratio.groupby("family"):
+    summary = subset.groupby("density")["speedup"].agg(["min", "median", "max"])
+    axis.fill_between(summary.index, summary["min"], summary["max"], color=family_colors[family], alpha=0.15)
+    axis.plot(summary.index, summary["median"], "o-", label=f"{family} (median)", color=family_colors[family])
+axis.axhline(1, color="black", linewidth=1, linestyle="--", label="equal time")
+axis.set_xscale("log"); axis.set_yscale("log")
+axis.set_xlabel("target density"); axis.set_ylabel("UMFPACK time ÷ Jacobi time")
+axis.set_title("Structure changes the result at the same density")
+axis.grid(alpha=0.25, which="both"); axis.legend(frameon=False)
+fig.tight_layout(); plt.show()
 """),
     markdown(r"""
 # 3 · The same switch inside Brightway
@@ -729,13 +865,15 @@ plt.show()
     markdown(r"""
 # Takeaways
 
-1. **The crossover is structural.** As random cross-links and density generate fill-in, direct runtime and RAM rise sharply.
-2. **A fixed matrix favors reuse.** Direct factorization amortizes across many right-hand sides.
-3. **Changing matrices favor factorization-free iteration.** Jacobi+GMRES avoids paying a new LU factorization each sample.
-4. **Approximation must be audited.** Report `rtol`, GMRES status, the measured $Ax-b$ residual, and solution agreement.
-5. **Large systems change the practical limit.** Jacobi+GMRES can remain feasible after direct factorization runs out of memory.
+1. **Is the matrix fixed?** Reuse favors UMFPACK or Pardiso.
+2. **Does the matrix change every iteration?** Avoiding repeated factorization can favor Jacobi + GMRES.
+3. **Does factorization fit in memory?** Size, density, and structure all affect fill-in.
+4. **Can you verify the approximation?** Always report tolerance, convergence, residual, and agreement.
 
-> Use direct solving by default; switch when measured factorisation cost—not fashion—justifies it.
+The large banded counterexample shows why **structure matters**: UMFPACK remains practical at
+50,000 rows when fill-in stays low, even though it struggles on smaller random high-fill matrices.
+
+> The solver choice follows the workload—not matrix size alone.
 """),
     markdown(r"""
 ## Presenter preflight—not part of the timed talk
@@ -757,55 +895,134 @@ if start is not None and end is not None:
         markdown("""
 # 3 · Fixed matrix, many right-hand sides
 
-One fixed technosphere matrix can serve many demands. UMFPACK factorizes once and reuses its factors;
-Jacobi + GMRES solves each right-hand side iteratively.
+One fixed 25,000 × 25,000 matrix can serve many demands. The left plot separates the one-time
+factorization from the first solve. The right plot then shows total time as more demands reuse that
+same matrix.
 """),
         code("""
-rhs_output = ROOT / "results" / "live_synthetic_rhs_sweep.json"
-rhs_command = [sys.executable, "dev/run_synthetic_suite.py", "--python", sys.executable,
-    "--output", str(rhs_output), "--sizes", "5000", "--solvers", *DIRECT_SOLVERS, "jacobi-gmres",
-    "--topology", "constant-degree", "--degree", "8", "--rhs-counts", "1", "10", "100", "1000",
-    "--rtol", str(RTOL), "--run-timeout", "120"]
-run_checked(rhs_command, timeout=600)
-rhs = pd.json_normalize(json.loads(rhs_output.read_text())["results"])
-display(rhs[["solver", "rhs_count", "factorization_seconds", "rhs_solve_seconds", "solve_seconds", "relative_residual"]])
-fig, axis = plt.subplots(figsize=(8.5, 4))
+rhs_payload = run_benchmark(
+    "fixed matrix demands",
+    sizes=[25_000],
+    solvers=[*DIRECT_SOLVERS, "jacobi-gmres"],
+    topology="banded",
+    degree=50,
+    rhs_counts=[1, 2, 3, 5, 10, 25, 50, 100, 250, 500],
+    rtol=RTOL,
+    worker_timeout=120,
+    suite_timeout=600,
+)
+rhs = pd.json_normalize(rhs_payload["results"])
+fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+
+first_demand = rhs[
+    (rhs.rhs_count == 1) & rhs.solver.isin(["umfpack", "jacobi-gmres"])
+].set_index("solver")
+bar_solvers = [solver for solver in ["umfpack", "jacobi-gmres"] if solver in first_demand.index]
+x = np.arange(len(bar_solvers))
+setup_time = [first_demand.loc[solver, "factorization_seconds"] for solver in bar_solvers]
+solve_time = [first_demand.loc[solver, "rhs_solve_seconds"] for solver in bar_solvers]
+axes[0].bar(x, setup_time, label="one-time factorization", color="#B0B0B0")
+axes[0].bar(x, solve_time, bottom=setup_time, label="solve first demand", color=[colors[solver] for solver in bar_solvers])
+axes[0].set_xticks(x, [solver_names[solver] for solver in bar_solvers])
+axes[0].set_ylabel("time [s]")
+axes[0].set_title("Cost of the first demand")
+axes[0].legend(frameon=False, fontsize=8)
+
 for solver, subset in rhs.groupby("solver"):
-    axis.plot(subset["rhs_count"], subset["solve_seconds"], "o-", label=solver, color=colors[solver])
-axis.set_xscale("log"); axis.set_yscale("log")
-axis.set_xlabel("right-hand sides on one fixed matrix"); axis.set_ylabel("total runtime [s, log]")
-axis.set_title("Factorization amortization creates the crossover"); axis.grid(alpha=0.25, which="both")
-axis.legend(frameon=False); fig.tight_layout(); plt.show()
+    axes[1].plot(
+        subset["rhs_count"], subset["solve_seconds"], "o-",
+        label=solver_names[solver], color=colors[solver],
+    )
+
+comparison = rhs[rhs.solver.isin(["umfpack", "jacobi-gmres"])].pivot(
+    index="rhs_count", columns="solver", values="solve_seconds"
+)
+if {"umfpack", "jacobi-gmres"}.issubset(comparison.columns):
+    direct_wins = comparison.index[comparison["umfpack"] < comparison["jacobi-gmres"]]
+    if len(direct_wins):
+        crossover = direct_wins.min()
+        axes[1].axvline(crossover, color="black", linestyle="--", linewidth=1)
+        axes[1].text(crossover, axes[1].get_ylim()[1], f"  direct faster from ~{crossover:,}", va="top", fontsize=8)
+
+axes[1].set_xlabel("demands solved with one fixed matrix")
+axes[1].set_ylabel("total solve time [s]")
+axes[1].set_title("Factorization reuse changes the winner")
+axes[1].legend(frameon=False, fontsize=8)
+for axis in axes:
+    axis.grid(alpha=0.25)
+fig.tight_layout(); plt.show()
 """),
         markdown("""
 # 4 · Changing matrix, repeated solves
 
-This synthetic Monte Carlo analogue rebuilds the technosphere matrix for every sample. Both solvers
-receive the same paired matrices and demand; residuals and convergence are recorded.
+This is a 500-iteration synthetic **Monte Carlo** analogue: the technosphere matrix changes slightly
+at every sample. UMFPACK must refactorize each matrix. Jacobi + GMRES is shown both with a warm start
+from the previous solution and without one, matching the role of `use_guess` in `bw2calc`.
 """),
         code("""
-from dev.benchmark_synthetic import constant_degree_matrix, solve
-demand = np.zeros(5000); demand[0] = 1.0
+demand = np.zeros(5000)
+demand[0] = 1.0
 records = []
-for solver in (*DIRECT_SOLVERS, "jacobi-gmres"):
-    started = perf_counter(); residuals = []; iterations = []
-    for sample in range(20):
-        matrix = constant_degree_matrix(5000, 8, SEED + sample, 4.0)
+coupling_rng = np.random.default_rng(SEED)
+sample_couplings = np.clip(0.8 + coupling_rng.normal(0, 0.015, 500), 0.7, 0.9)
+solver_cases = [
+    *((solver, solver, False) for solver in DIRECT_SOLVERS),
+    ("jacobi-gmres", "jacobi-gmres", True),
+    ("jacobi-gmres-no-guess", "jacobi-gmres", False),
+]
+
+for label, solver, reuse_guess in solver_cases:
+    started = perf_counter()
+    residuals = []
+    iterations = []
+    previous_solution = None
+    for sample in range(500):
+        matrix = banded_matrix(
+            5_000, 4, SEED, 4.0,
+            coupling=float(sample_couplings[sample]),
+        )
         solve_started = perf_counter()
-        solution, info, count = solve(matrix, demand, solver, RTOL, 50, 300)
+        solution, info, count = solve(
+            matrix, demand, solver, RTOL, 50, 300,
+            x0=previous_solution if reuse_guess else None,
+        )
         elapsed = perf_counter() - solve_started
         residual = float(np.linalg.norm(matrix @ solution - demand) / np.linalg.norm(demand))
-        residuals.append(residual); iterations.append(count)
-        records.append({"solver": solver, "sample": sample, "solve_seconds": elapsed, "iterations": count, "relative_residual": residual, "info": info})
-    records.append({"solver": solver, "sample": "TOTAL", "solve_seconds": perf_counter() - started, "iterations": int(np.median(iterations)), "relative_residual": max(residuals), "info": None})
+        if reuse_guess:
+            previous_solution = solution
+        residuals.append(residual)
+        iterations.append(count)
+        records.append({"solver": label, "sample": sample, "solve_seconds": elapsed, "iterations": count, "relative_residual": residual, "info": info})
+    records.append({"solver": label, "sample": "TOTAL", "solve_seconds": perf_counter() - started, "iterations": int(np.median(iterations)), "relative_residual": max(residuals), "info": None})
 changing = pd.DataFrame(records)
-display(changing[changing["sample"] == "TOTAL"])
-fig, axis = plt.subplots(figsize=(8.5, 4))
-for solver, subset in changing[changing["sample"] != "TOTAL"].groupby("solver"):
-    axis.plot(subset["sample"], subset["solve_seconds"], "o-", label=solver, color=colors[solver])
-axis.set_xlabel("sample; matrix rebuilt each time"); axis.set_ylabel("solve runtime [s]")
-axis.set_title("Repeated factorization versus factorization-free iteration"); axis.grid(alpha=0.25)
-axis.legend(frameon=False); fig.tight_layout(); plt.show()
+per_sample = changing[changing["sample"] != "TOTAL"].copy()
+per_sample["cumulative_seconds"] = per_sample.groupby("solver")["solve_seconds"].cumsum()
+per_sample["monte_carlo_iteration"] = per_sample["sample"].astype(int) + 1
+
+fig, axis = plt.subplots(figsize=(8.5, 4.5))
+for solver, subset in per_sample.groupby("solver"):
+    label = "Jacobi + GMRES (warm start)" if solver == "jacobi-gmres" else solver_names[solver]
+    axis.plot(
+        subset["monte_carlo_iteration"],
+        subset["cumulative_seconds"],
+        "o-",
+        label=label,
+        color=colors[solver],
+        markersize=3,
+    )
+    final = subset.iloc[-1]
+    axis.annotate(
+        f"{final['cumulative_seconds']:.2f} s",
+        (final["monte_carlo_iteration"], final["cumulative_seconds"]),
+        xytext=(5, 0), textcoords="offset points", va="center", fontsize=8,
+    )
+axis.set_xlabel("Monte Carlo iteration")
+axis.set_ylabel("cumulative solve time [s]")
+axis.set_title("Cumulative cost across changing matrices")
+axis.set_xlim(1, per_sample["monte_carlo_iteration"].max() * 1.05)
+axis.grid(alpha=0.25)
+axis.legend(frameon=False)
+fig.tight_layout(); plt.show()
 """),
         markdown("""
 # 5 · JacobiGMRESLCA in bw2calc
@@ -813,6 +1030,9 @@ axis.legend(frameon=False); fig.tight_layout(); plt.show()
 In Brightway, `bw2calc.JacobiGMRESLCA` changes the technosphere solve while leaving biosphere and
 characterization processing unchanged. Main arguments are `demand`, `method`, `rtol`, `use_guess`,
 `restart`, and `maxiter`.
+
+For repeated solves, `use_guess=True` starts from the previous supply array; `False` starts each
+solve without that warm start.
 
 ```python
 from bw2calc import JacobiGMRESLCA
@@ -825,17 +1045,85 @@ print(lca.score)
 Check convergence, residual, and agreement before interpreting an iterative score.
 """),
         markdown("""
-# When to use Jacobi + GMRES
+# When to use **Jacobi + GMRES**
 
-Use it when the technosphere is very large and sparse, the matrix changes repeatedly, or direct
-factorization approaches the machine memory limit and a controlled tolerance is acceptable.
+**Good fit when:**
 
-Prefer direct UMFPACK or Pardiso when the matrix is small or moderate, many demands reuse one fixed
-matrix, exact/direct solves are required, or factorization fits comfortably in memory and can be
-amortized. Decide from measured factorization cost, memory, convergence, and agreement—not runtime
-alone.
+- The system is **very large and sparse**.
+- The matrix **changes repeatedly**.
+- A direct factorization is close to the machine's **memory limit**.
+- A **controlled tolerance** is acceptable.
+
+**Choose UMFPACK or Pardiso when:**
+
+- The matrix is small or moderate.
+- Many demands reuse one fixed matrix.
+- You need a direct answer and factorization fits comfortably in memory.
+
+*Measure runtime, memory, convergence, and agreement before choosing.*
 """),
     ]
+
+# Start directly with scaling; retain only the short solver explainer from the former Section 1.
+section_one_start = next((
+    index for index, cell in enumerate(cells)
+    if cell.cell_type == "markdown" and cell.source.startswith("# 1 · Strip LCA")
+), None)
+scaling_start = next((
+    index for index, cell in enumerate(cells)
+    if cell.cell_type == "markdown" and cell.source.startswith("# 2 · Scale")
+), None)
+if section_one_start is not None and scaling_start is not None:
+    cells[section_one_start:scaling_start] = [markdown("""
+## Solver toolbox
+
+- **NumPy dense** stores and solves the complete matrix, including all its zeros.
+- **SuperLU** is SciPy's general sparse direct solver.
+- **UMFPACK** is a sparse direct solver designed to limit unnecessary work and memory.
+- **GMRES** approaches the answer iteratively, stopping when the requested tolerance is reached.
+- **Jacobi + GMRES** rescales the equations using the diagonal before iterating.
+- **Pardiso**, when installed, appears as another high-performance sparse direct solver.
+
+Every comparison also checks convergence and the relative residual $||Ax-b||/||b||$.
+""")]
+
+for cell in cells:
+    if cell.cell_type != "markdown":
+        continue
+    cell.source = cell.source.replace("# 2 · Scale the matrix", "# 1 · Scale the matrix")
+    cell.source = cell.source.replace("# 3 · Fixed matrix", "# 2 · Fixed matrix")
+    cell.source = cell.source.replace("# 4 · Changing matrix", "# 3 · Changing matrix")
+    cell.source = cell.source.replace("# 5 · JacobiGMRESLCA", "# 4 · JacobiGMRESLCA")
+
+# Keep the presentation focused on the audience rather than speaker setup.
+cells = [cell for cell in cells if not (
+    cell.cell_type == "markdown" and cell.source.startswith("## Presenter preflight")
+)]
+
+structure_start = next((
+    index for index, cell in enumerate(cells)
+    if cell.cell_type == "markdown" and cell.source.startswith("### Matrix structure sensitivity")
+), None)
+if structure_start is not None:
+    del cells[structure_start:structure_start + 2]
+
+# Show the random density stress test before the structured large-matrix counterexample.
+large_start = next((
+    index for index, cell in enumerate(cells)
+    if cell.cell_type == "markdown" and cell.source.startswith("### Large synthetic systems")
+), None)
+if large_start is not None:
+    large_cells = cells[large_start:large_start + 2]
+    del cells[large_start:large_start + 2]
+    density_start = next((
+        index for index, cell in enumerate(cells)
+        if cell.cell_type == "markdown" and cell.source.startswith("## Guarded size–density stress test")
+    ), None)
+    if density_start is not None:
+        cells[density_start + 2:density_start + 2] = large_cells
+
+# Put the title and storyline before the hidden benchmark machinery.
+cells.insert(2, cells.pop(0))
 
 for index, cell in enumerate(cells, start=1):
     cell["id"] = f"brightcon-{index:02d}"

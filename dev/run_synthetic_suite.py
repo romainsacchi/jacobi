@@ -115,7 +115,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--topology",
-        choices=("constant-degree", "fixed-density"),
+        choices=("constant-degree", "fixed-density", "banded"),
         default="constant-degree",
     )
     parser.add_argument("--degree", type=int, default=8)
@@ -123,7 +123,7 @@ def main() -> None:
     parser.add_argument("--degrees", type=int, nargs="+")
     parser.add_argument("--densities", type=float, nargs="+")
     parser.add_argument(
-        "--matrix-family", choices=("lca-random", "io-block"), default="lca-random"
+        "--matrix-family", choices=("lca-random", "io-block", "banded"), default="lca-random"
     )
     parser.add_argument("--blocks", type=int, default=8)
     parser.add_argument("--rhs-count", type=int, default=1)
@@ -163,6 +163,8 @@ def main() -> None:
         estimated_nnz = (
             size * (degree + 1)
             if args.topology == "constant-degree"
+            else size * (2 * degree + 1)
+            if args.topology == "banded"
             else int(size * size * density) + size
         )
         estimated_storage_bytes = estimated_nnz * 12 + (size + 1) * 4
@@ -182,9 +184,9 @@ def main() -> None:
                     "solver": solver,
                     "size": size,
                     "topology": args.topology,
-                    "degree": degree if args.topology == "constant-degree" else None,
+                    "degree": degree if args.topology in {"constant-degree", "banded"} else None,
                     "target_density": density if args.topology == "fixed-density" else None,
-                    "matrix_family": args.matrix_family,
+                    "matrix_family": "banded" if args.topology == "banded" else args.matrix_family,
                     "rhs_count": rhs_count,
                     "estimated_nnz": estimated_nnz,
                     "estimated_construction_mib": estimated_construction_mib,
