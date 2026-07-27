@@ -1,3 +1,0 @@
-benchmark_id,system,dimension_rows,dimension_columns,density,direct_seconds,jacobi_gmres_seconds,source,status,notes
-regionalised_250k,Regionalised technosphere system,250000,250000,,480,4,https://indico.d-d-s.ch/event/2/contributions/59/,reported,Approximate timings reported in the conference abstract; density and hardware not stated
-synthetic_40k,Synthetic technosphere-like system,40000,40000,0.001,1540,0.02,https://indico.d-d-s.ch/event/2/contributions/59/,reported,Approximate timings reported in the conference abstract; hardware not stated
